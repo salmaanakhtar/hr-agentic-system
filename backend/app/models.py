@@ -33,6 +33,29 @@ class Employee(Base):
 
     user = relationship("User")
 
+class Manager(Base):
+    __tablename__ = "managers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    first_name = Column(String)
+    last_name = Column(String)
+    email = Column(String, unique=True, index=True)
+    department = Column(String, nullable=True)
+
+    user = relationship("User")
+
+class HR(Base):
+    __tablename__ = "hrs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    first_name = Column(String)
+    last_name = Column(String)
+    email = Column(String, unique=True, index=True)
+
+    user = relationship("User")
+
 class ApprovalState(Base):
     __tablename__ = "approval_states"
 

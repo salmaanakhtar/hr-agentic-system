@@ -25,6 +25,8 @@ export class SignupComponent {
       username: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
+      first_name: ['', [Validators.required]],
+      last_name: ['', [Validators.required]],
       role: ['employee', [Validators.required]]
     });
   }

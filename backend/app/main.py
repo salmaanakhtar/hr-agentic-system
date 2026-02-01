@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from passlib.context import CryptContext
 from dotenv import load_dotenv
 from .database import SessionLocal, get_db
-from .models import User, Employee, Role
+from .models import User, Employee, Manager, HR, Role
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
@@ -115,6 +115,8 @@ class UserSignup(BaseModel):
     email: str
     password: str
     role: str
+    first_name: str
+    last_name: str
 
 def get_password_hash(password):
     return pwd_context.hash(password)
@@ -130,8 +132,12 @@ def signup(user: UserSignup, db: Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
     
+    # Check if email is already used in any role table
     db_employee = db.query(Employee).filter(Employee.email == user.email).first()
-    if db_employee:
+    db_manager = db.query(Manager).filter(Manager.email == user.email).first()
+    db_hr = db.query(HR).filter(HR.email == user.email).first()
+    
+    if db_employee or db_manager or db_hr:
         raise HTTPException(status_code=400, detail="Email already registered")
     
     # Get role_id from role name
@@ -146,9 +152,18 @@ def signup(user: UserSignup, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     
-    # For now, create employee with basic info - first_name and last_name can be updated later
-    new_employee = Employee(user_id=new_user.id, first_name="", last_name="", email=user.email)
-    db.add(new_employee)
+    # Create role-specific record based on the selected role
+    if user.role == "employee":
+        new_record = Employee(user_id=new_user.id, first_name=user.first_name, last_name=user.last_name, email=user.email)
+    elif user.role == "manager":
+        new_record = Manager(user_id=new_user.id, first_name=user.first_name, last_name=user.last_name, email=user.email)
+    elif user.role == "hr":
+        new_record = HR(user_id=new_user.id, first_name=user.first_name, last_name=user.last_name, email=user.email)
+    else:
+        # For admin, create employee record as default
+        new_record = Employee(user_id=new_user.id, first_name=user.first_name, last_name=user.last_name, email=user.email)
+    
+    db.add(new_record)
     db.commit()
     
     return {"message": "User created successfully", "user_id": new_user.id}
@@ -169,14 +184,27 @@ async def login(credentials: LoginCredentials, db: Session = Depends(get_db)):
 
 @app.get("/me", response_model=UserResponse)
 async def read_users_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    employee = db.query(Employee).filter(Employee.user_id == current_user.id).first()
-    if not employee:
-        raise HTTPException(status_code=404, detail="Employee data not found")
     role_name = db.query(Role).filter(Role.id == current_user.role_id).first().name
+    
+    # Get user data from the appropriate table based on role
+    user_data = None
+    if role_name == "employee":
+        user_data = db.query(Employee).filter(Employee.user_id == current_user.id).first()
+    elif role_name == "manager":
+        user_data = db.query(Manager).filter(Manager.user_id == current_user.id).first()
+    elif role_name == "hr":
+        user_data = db.query(HR).filter(HR.user_id == current_user.id).first()
+    else:
+        # For admin or other roles, try employee table as fallback
+        user_data = db.query(Employee).filter(Employee.user_id == current_user.id).first()
+    
+    if not user_data:
+        raise HTTPException(status_code=404, detail="User data not found")
+    
     return UserResponse(
         id=current_user.id,
         username=current_user.username,
-        email=employee.email,
+        email=user_data.email,
         role=role_name
     )
 
