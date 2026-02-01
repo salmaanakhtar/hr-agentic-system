@@ -1,0 +1,34 @@
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <h1>HR Agentic System Dashboard</h1>
+    <button (click)="logout()" class="logout-btn">Logout</button>
+  </header>
+
+  <div class="dashboard-content" *ngIf="user">
+    <div class="welcome-message">
+      <h2>{{ getRoleMessage() }}</h2>
+    </div>
+
+    <div class="user-info">
+      <h3>User Information</h3>
+      <p><strong>Username:</strong> {{ user.username }}</p>
+      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Role:</strong> {{ user.role }}</p>
+    </div>
+
+    <div class="features">
+      <h3>Available Features</h3>
+      <ul>
+        <li *ngIf="user.role === 'admin' || user.role === 'hr'">Employee Management</li>
+        <li *ngIf="user.role === 'admin' || user.role === 'hr' || user.role === 'manager'">Team Oversight</li>
+        <li>Personal Profile</li>
+        <li>Document Access</li>
+        <li *ngIf="user.role === 'admin'">System Administration</li>
+      </ul>
+    </div>
+  </div>
+
+  <div *ngIf="!user" class="loading">
+    <p>Loading user information...</p>
+  </div>
+</div>
