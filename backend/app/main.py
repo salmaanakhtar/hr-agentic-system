@@ -84,10 +84,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
 
 app = FastAPI()
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],  # Frontend URL
+    allow_origins=["http://localhost:4200"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -97,7 +96,6 @@ app.add_middleware(
 def startup_event():
     db = SessionLocal()
     try:
-        # Seed roles if they don't exist
         roles = ["employee", "manager", "hr", "admin"]
         for role_name in roles:
             role = db.query(Role).filter(Role.name == role_name).first()
@@ -131,16 +129,14 @@ def signup(user: UserSignup, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.username == user.username).first()
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
-    
-    # Check if email is already used in any role table
+
     db_employee = db.query(Employee).filter(Employee.email == user.email).first()
     db_manager = db.query(Manager).filter(Manager.email == user.email).first()
     db_hr = db.query(HR).filter(HR.email == user.email).first()
     
     if db_employee or db_manager or db_hr:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
-    # Get role_id from role name
+
     role = db.query(Role).filter(Role.name == user.role).first()
     if not role:
         print(f"Role not found: {user.role}")
@@ -152,7 +148,7 @@ def signup(user: UserSignup, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     
-    # Create role-specific record based on the selected role
+
     if user.role == "employee":
         new_record = Employee(user_id=new_user.id, first_name=user.first_name, last_name=user.last_name, email=user.email)
     elif user.role == "manager":
@@ -160,7 +156,6 @@ def signup(user: UserSignup, db: Session = Depends(get_db)):
     elif user.role == "hr":
         new_record = HR(user_id=new_user.id, first_name=user.first_name, last_name=user.last_name, email=user.email)
     else:
-        # For admin, create employee record as default
         new_record = Employee(user_id=new_user.id, first_name=user.first_name, last_name=user.last_name, email=user.email)
     
     db.add(new_record)
@@ -185,8 +180,7 @@ async def login(credentials: LoginCredentials, db: Session = Depends(get_db)):
 @app.get("/me", response_model=UserResponse)
 async def read_users_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     role_name = db.query(Role).filter(Role.id == current_user.role_id).first().name
-    
-    # Get user data from the appropriate table based on role
+
     user_data = None
     if role_name == "employee":
         user_data = db.query(Employee).filter(Employee.user_id == current_user.id).first()
@@ -195,7 +189,7 @@ async def read_users_me(current_user: User = Depends(get_current_user), db: Sess
     elif role_name == "hr":
         user_data = db.query(HR).filter(HR.user_id == current_user.id).first()
     else:
-        # For admin or other roles, try employee table as fallback
+
         user_data = db.query(Employee).filter(Employee.user_id == current_user.id).first()
     
     if not user_data:

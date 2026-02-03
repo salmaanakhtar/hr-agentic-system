@@ -20,3 +20,5 @@ pip-delete-this-directory.txt
 # OS
 .DS_Store
 Thumbs.db
+backend/manual_test.py
+backend/test_agents.py
