@@ -26,7 +26,6 @@ export class DashboardComponent implements OnInit {
 
     this.user = this.authService.getCurrentUser();
     if (!this.user) {
-      // Try to load user data
       this.authService.currentUser$.subscribe(user => {
         this.user = user;
       });
