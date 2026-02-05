@@ -1,6 +1,5 @@
 from .base import Agent
 from .schemas import BasicAgentInput, BasicAgentOutput
-from .state import AgentState
 import logging
 
 
