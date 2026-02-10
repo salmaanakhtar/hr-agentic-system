@@ -77,23 +77,19 @@ class WorkflowState(Base):
     expires_at = Column(DateTime, index=True)
     completed_at = Column(DateTime, nullable=True)
 
-    # JSON fields for complex data
     data = Column(JSON, default=dict)
     workflow_metadata = Column(JSON, default=dict)
     steps = Column(JSON, default=list)
     current_step = Column(String, nullable=True)
     next_steps = Column(JSON, default=list)
 
-    # Versioning and validation
     version = Column(Integer, default=1)
     checksum = Column(String, nullable=True)
     is_valid = Column(Boolean, default=True)
 
-    # Lifecycle management
     ttl_hours = Column(Integer, default=24)
     cleanup_scheduled = Column(Boolean, default=False)
 
-    # Relationships
     user = relationship("User")
 
     def to_dict(self) -> Dict[str, Any]:

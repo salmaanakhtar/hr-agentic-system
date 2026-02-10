@@ -73,7 +73,7 @@ class StateManager:
             return WorkflowState.from_dict(db_state.to_dict())
 
     async def update_workflow_state(self, workflow_state: WorkflowState) -> None:
-        # Validate state integrity before updating
+        
         if not workflow_state.validate_integrity():
             self.logger.warning(f"State integrity check failed for workflow {workflow_state.workflow_id}")
             workflow_state.is_valid = False
@@ -87,7 +87,7 @@ class StateManager:
             if not db_state:
                 raise ValueError(f"Workflow state not found: {workflow_state.workflow_id}")
 
-            # Update fields
+            
             db_state.status = workflow_state.status.value
             db_state.updated_at = workflow_state.updated_at
             db_state.completed_at = workflow_state.completed_at
@@ -220,7 +220,7 @@ class StateManager:
 
     async def get_workflow_stats(self) -> Dict[str, Any]:
         async with self.get_db_session() as session:
-            # Count by status
+           
             status_counts = {}
             for status in WorkflowStatus:
                 result = await session.execute(
@@ -229,7 +229,7 @@ class StateManager:
                 )
                 status_counts[status.value] = result.scalar()
 
-            # Count expired states
+            
             now = datetime.utcnow()
             result = await session.execute(
                 select(func.count()).select_from(WorkflowStateModel)
@@ -237,7 +237,7 @@ class StateManager:
             )
             expired_count = result.scalar()
 
-            # Count states needing cleanup
+            
             result = await session.execute(
                 select(func.count()).select_from(WorkflowStateModel)
                 .where(WorkflowStateModel.cleanup_scheduled == True)
@@ -269,5 +269,5 @@ class StateManager:
         }
 
 
-# Global state manager instance
+
 state_manager = StateManager()

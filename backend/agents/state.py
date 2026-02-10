@@ -30,9 +30,9 @@ class WorkflowStep(BaseModel):
     dependencies: List[str] = Field(default_factory=list)
 
     def dict(self, *args, **kwargs) -> Dict[str, Any]:
-        """Override dict to handle datetime serialization for JSON storage."""
+        
         data = super().dict(*args, **kwargs)
-        # Convert datetime objects to ISO strings for JSON serialization
+       
         if data.get('started_at'):
             data['started_at'] = data['started_at'].isoformat()
         if data.get('completed_at'):
@@ -50,21 +50,21 @@ class WorkflowState(BaseModel):
     expires_at: Optional[datetime] = Field(default_factory=lambda: datetime.now() + timedelta(hours=24))
     completed_at: Optional[datetime] = None
 
-    # Workflow data
+    
     data: Dict[str, Any] = Field(default_factory=dict)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-    # Step tracking
+    
     steps: List[WorkflowStep] = Field(default_factory=list)
     current_step: Optional[str] = None
     next_steps: List[str] = Field(default_factory=list)
 
-    # Validation and consistency
+    
     version: int = Field(default=1)
     checksum: Optional[str] = None
     is_valid: bool = Field(default=True)
 
-    # Lifecycle management
+    
     ttl_hours: int = Field(default=24)
     cleanup_scheduled: bool = Field(default=False)
 
@@ -142,7 +142,7 @@ class WorkflowState(BaseModel):
         if not step:
             return False
 
-        # Check if all dependencies are completed
+        
         for dep_id in step.dependencies:
             dep_step = self.get_step(dep_id)
             if not dep_step or dep_step.status != "completed":
@@ -228,7 +228,7 @@ class WorkflowState(BaseModel):
         steps_data = data.get("steps", [])
         steps = []
         for step_data in steps_data:
-            # Convert ISO strings back to datetime objects for WorkflowStep
+            
             if step_data.get("started_at"):
                 step_data["started_at"] = datetime.fromisoformat(step_data["started_at"])
             if step_data.get("completed_at"):
