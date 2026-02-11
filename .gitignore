@@ -27,3 +27,9 @@ backend/test_state.py
 backend/test_runner.py
 backend/test_phase2_completion.py
 CLAUDE.md
+REFACTOR_PLAN.md
+backend/test_langchain_leave_agent.py
+backend/test_leave_agent_basic.py
+REFACTOR_COMPLETE.md
+backend/agents/leave_agent_rule_based_backup.py
+SESSION_END_SUMMARY.md

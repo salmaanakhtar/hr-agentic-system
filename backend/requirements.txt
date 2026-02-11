@@ -3,3 +3,13 @@ uvicorn
 python-dotenv
 sqlalchemy
 psycopg2-binary
+asyncpg
+pydantic[email]>=2.0
+passlib[bcrypt]
+python-jose[cryptography]
+openai
+langchain
+langchain-openai
+langchain-community
+numpy
+easyocr

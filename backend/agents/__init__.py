@@ -16,3 +16,5 @@ from .schemas import (
     ExpenseValidationOutput, CandidateRankingOutput
 )
 from .examples import HelloWorldAgent
+from .leave_agent import LeaveAgent
+from .register_agents import register_all_agents
