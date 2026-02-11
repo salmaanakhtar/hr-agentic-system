@@ -12,6 +12,7 @@ from .schemas import (
     WorkflowAgentInput, QueryAgentInput,
     DecisionAgentOutput, MultiStepAgentOutput, QueryAgentOutput,
     LeaveRequestInput, ExpenseClaimInput, HiringRequestInput, PayrollQueryInput,
-    LeaveDecisionOutput, ExpenseValidationOutput, CandidateRankingOutput
+    LeaveDecisionOutput, LeaveValidationOutput, LeaveApprovalOutput,
+    ExpenseValidationOutput, CandidateRankingOutput
 )
 from .examples import HelloWorldAgent

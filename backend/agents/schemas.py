@@ -108,6 +108,29 @@ class LeaveDecisionOutput(BaseModel):
     comments: Optional[str] = None
 
 
+class LeaveValidationOutput(BaseModel):
+    success: bool
+    message: str
+    reasoning: str
+    is_valid: bool
+    conflicts: List[str] = Field(default_factory=list)
+    auto_approval_eligible: bool
+    required_approvals: List[str] = Field(default_factory=list)
+    validation_warnings: List[str] = Field(default_factory=list)
+    recommended_actions: List[str] = Field(default_factory=list)
+
+
+class LeaveApprovalOutput(BaseModel):
+    success: bool
+    message: str
+    reasoning: str
+    decision: ApprovalState
+    approved_days: Optional[float] = None
+    rejection_reason: Optional[str] = None
+    next_steps: List[str] = Field(default_factory=list)
+    policy_references: List[str] = Field(default_factory=list)
+
+
 class ExpenseValidationOutput(BaseModel):
     success: bool
     message: str

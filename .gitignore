@@ -26,3 +26,4 @@ backend/test_tools.py
 backend/test_state.py
 backend/test_runner.py
 backend/test_phase2_completion.py
+CLAUDE.md
