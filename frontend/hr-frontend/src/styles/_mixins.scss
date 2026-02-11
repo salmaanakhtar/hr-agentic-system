@@ -1,0 +1,240 @@
+// ============================================================================
+// Glassmorphism Mixins
+// ============================================================================
+
+@import 'variables';
+
+// Main glass effect mixin
+@mixin glass-effect($opacity: 0.7) {
+  backdrop-filter: blur($blur-md) saturate(180%);
+  -webkit-backdrop-filter: blur($blur-md) saturate(180%);
+
+  [data-theme='light'] & {
+    background: rgba(255, 255, 255, $opacity);
+    border: 1px solid $light-glass-border;
+    box-shadow: 0 8px 32px 0 $light-shadow;
+  }
+
+  [data-theme='dark'] & {
+    background: rgba(15, 23, 42, $opacity);
+    border: 1px solid $dark-glass-border;
+    box-shadow: 0 8px 32px 0 $dark-shadow;
+  }
+}
+
+// Glass card variant
+@mixin glass-card {
+  @include glass-effect(0.7);
+  border-radius: $radius-lg;
+  padding: $spacing-xl;
+  transition: all $transition-normal;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.2);
+  }
+}
+
+// Glass panel variant (less prominent)
+@mixin glass-panel {
+  @include glass-effect(0.5);
+  border-radius: $radius-md;
+  padding: $spacing-lg;
+}
+
+// Glass button variant
+@mixin glass-button {
+  @include glass-effect(0.6);
+  border-radius: $radius-md;
+  padding: $spacing-sm $spacing-lg;
+  cursor: pointer;
+  transition: all $transition-fast;
+  border: none;
+
+  [data-theme='light'] & {
+    color: $light-text-primary;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateY(-1px);
+    }
+  }
+
+  [data-theme='dark'] & {
+    color: $dark-text-primary;
+
+    &:hover {
+      background: rgba(15, 23, 42, 0.9);
+      transform: translateY(-1px);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+// Glass input variant
+@mixin glass-input {
+  @include glass-effect(0.5);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  border: 1px solid transparent;
+  transition: all $transition-fast;
+
+  [data-theme='light'] & {
+    color: $light-text-primary;
+
+    &::placeholder {
+      color: $light-text-secondary;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      background: rgba(255, 255, 255, 0.8);
+    }
+  }
+
+  [data-theme='dark'] & {
+    color: $dark-text-primary;
+
+    &::placeholder {
+      color: $dark-text-secondary;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $primary-light;
+      background: rgba(15, 23, 42, 0.8);
+    }
+  }
+}
+
+// Gradient background mixin
+@mixin gradient-bg {
+  background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+  min-height: 100vh;
+  transition: background $transition-slow;
+}
+
+// Text color mixin
+@mixin text-primary {
+  [data-theme='light'] & {
+    color: $light-text-primary;
+  }
+
+  [data-theme='dark'] & {
+    color: $dark-text-primary;
+  }
+}
+
+@mixin text-secondary {
+  [data-theme='light'] & {
+    color: $light-text-secondary;
+  }
+
+  [data-theme='dark'] & {
+    color: $dark-text-secondary;
+  }
+}
+
+// Primary button (solid, not glass)
+@mixin primary-button {
+  background: linear-gradient(135deg, $primary, $primary-light);
+  color: white;
+  border: none;
+  border-radius: $radius-md;
+  padding: $spacing-md $spacing-xl;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all $transition-fast;
+  box-shadow: 0 4px 15px 0 rgba(99, 102, 241, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+// Status badge mixin
+@mixin status-badge($color) {
+  display: inline-block;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-sm;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  @if $color == 'success' {
+    background: rgba($success, 0.1);
+    color: $success;
+    border: 1px solid rgba($success, 0.3);
+  } @else if $color == 'warning' {
+    background: rgba($warning, 0.1);
+    color: $warning;
+    border: 1px solid rgba($warning, 0.3);
+  } @else if $color == 'error' {
+    background: rgba($error, 0.1);
+    color: $error;
+    border: 1px solid rgba($error, 0.3);
+  } @else if $color == 'info' {
+    background: rgba($primary, 0.1);
+    color: $primary;
+    border: 1px solid rgba($primary, 0.3);
+  }
+}
+
+// Scrollbar styling
+@mixin custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba($primary, 0.3);
+    border-radius: $radius-sm;
+
+    &:hover {
+      background: rgba($primary, 0.5);
+    }
+  }
+
+  [data-theme='dark'] & {
+    &::-webkit-scrollbar-thumb {
+      background: rgba($primary-light, 0.3);
+
+      &:hover {
+        background: rgba($primary-light, 0.5);
+      }
+    }
+  }
+}
