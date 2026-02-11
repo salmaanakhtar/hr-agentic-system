@@ -4,13 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from passlib.context import CryptContext
 from dotenv import load_dotenv
-from .database import SessionLocal, get_db
+from .database import SessionLocal, get_db, get_async_db, AsyncSessionLocal
 from .models import User, Employee, Manager, HR, Role
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 import os
-from sqlalchemy.orm import Session
 
 load_dotenv()
 
@@ -63,7 +64,11 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_async_db)):
+    """
+    Async version of get_current_user for use with async endpoints.
+    Eager-loads the role relationship to avoid lazy loading issues.
+    """
     credentials_exception = HTTPException(
         status_code=401,
         detail="Could not validate credentials",
@@ -77,12 +82,22 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         token_data = TokenData(username=username)
     except JWTError:
         raise credentials_exception
-    user = db.query(User).filter(User.username == token_data.username).first()
+
+    # Use async query with eager loading of role relationship
+    result = await db.execute(
+        select(User).options(selectinload(User.role)).where(User.username == token_data.username)
+    )
+    user = result.scalar_one_or_none()
+
     if user is None:
         raise credentials_exception
     return user
 
-app = FastAPI()
+app = FastAPI(
+    title="HR Agentic System API",
+    description="Multi-agent AI platform for HR workflows with LLM-powered decision making",
+    version="1.0.0"
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -91,6 +106,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+from app.routers import leave
+app.include_router(leave.router)
 
 @app.on_event("startup")
 def startup_event():

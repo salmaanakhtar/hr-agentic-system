@@ -33,3 +33,6 @@ backend/test_leave_agent_basic.py
 REFACTOR_COMPLETE.md
 backend/agents/leave_agent_rule_based_backup.py
 SESSION_END_SUMMARY.md
+backend/HR_Agentic_System_API.postman_collection.json
+backend/POSTMAN_TESTING_GUIDE.md
+backend/PHASE_3.4_COMPLETE.md
