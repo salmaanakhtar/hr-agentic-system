@@ -150,10 +150,6 @@ class PriorityPeriod(Base):
         if self.start_date and self.end_date:
             return (self.end_date - self.start_date).days + 1
         return 0
-    __tablename__ = "approval_states"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True)
 
 
 class WorkflowState(Base):

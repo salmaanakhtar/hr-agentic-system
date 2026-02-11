@@ -16,10 +16,10 @@ import os
 import json
 
 from langchain_openai import ChatOpenAI
-from langchain.agents import AgentExecutor, create_openai_functions_agent
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.tools import StructuredTool
-from pydantic import BaseModel, Field
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
+from langchain_core.tools import StructuredTool
+from pydantic.v1 import BaseModel as BaseModelV1, Field  # LangChain 0.1.x uses Pydantic V1
 
 from agents.base import Agent
 from agents.schemas import (
@@ -42,21 +42,21 @@ from app.models import (
 
 
 # Tool Input Schemas
-class LeaveBalanceCheckInput(BaseModel):
+class LeaveBalanceCheckInput(BaseModelV1):
     """Input schema for leave balance checking tool."""
     user_id: int = Field(description="Employee user ID")
     leave_type: str = Field(description="Type of leave (vacation, sick_leave, personal, maternity, paternity, bereavement)")
     days_requested: float = Field(description="Number of days being requested")
 
 
-class ConflictDetectionInput(BaseModel):
+class ConflictDetectionInput(BaseModelV1):
     """Input schema for conflict detection tool."""
     user_id: int = Field(description="Employee user ID")
     start_date: str = Field(description="Leave start date in YYYY-MM-DD format")
     end_date: str = Field(description="Leave end date in YYYY-MM-DD format")
 
 
-class BusinessRulesInput(BaseModel):
+class BusinessRulesInput(BaseModelV1):
     """Input schema for business rules validation tool."""
     start_date: str = Field(description="Leave start date in YYYY-MM-DD format")
     end_date: str = Field(description="Leave end date in YYYY-MM-DD format")
@@ -90,24 +90,24 @@ class LeaveAgent(Agent[LeaveRequestInput, LeaveValidationOutput]):
             openai_api_key=os.getenv("OPENAI_API_KEY")
         )
 
-        # Define tools that the LLM agent can use
+        # Define tools that the LLM agent can use (all async to avoid nested event loops)
         self.tools = [
             StructuredTool.from_function(
-                func=self._tool_check_leave_balance,
+                coroutine=self._tool_check_leave_balance,
                 name="check_leave_balance",
                 description="Check employee's remaining leave balance for a specific leave type. Returns total days, used days, and remaining days.",
                 args_schema=LeaveBalanceCheckInput,
                 return_direct=False
             ),
             StructuredTool.from_function(
-                func=self._tool_detect_conflicts,
+                coroutine=self._tool_detect_conflicts,
                 name="detect_conflicts",
                 description="Detect conflicts with existing approved leave requests and company blackout/priority periods. Returns list of conflicts and warnings.",
                 args_schema=ConflictDetectionInput,
                 return_direct=False
             ),
             StructuredTool.from_function(
-                func=self._tool_validate_business_rules,
+                coroutine=self._tool_validate_business_rules,
                 name="validate_business_rules",
                 description="Validate leave request against company business rules including minimum notice period (3 days) and maximum consecutive days (14 days). Returns violations and warnings.",
                 args_schema=BusinessRulesInput,
@@ -115,9 +115,8 @@ class LeaveAgent(Agent[LeaveRequestInput, LeaveValidationOutput]):
             )
         ]
 
-        # Create agent prompt with clear instructions
-        self.prompt = ChatPromptTemplate.from_messages([
-            ("system", """You are a Leave Request Validation Agent for an HR management system.
+        # System prompt with clear instructions
+        self.system_prompt = """You are a Leave Request Validation Agent for an HR management system.
 
 Your role is to analyze employee leave requests and make autonomous approval decisions based on company policies.
 
@@ -157,22 +156,67 @@ CONFIDENCE: [HIGH | MEDIUM | LOW]
 FACTORS: [comma-separated list of key factors you considered]
 RECOMMENDATIONS: [specific recommendations for manager if escalating, or next steps]
 
-Be thorough, use all tools, and provide clear reasoning for every decision."""),
-            ("human", "{input}"),
-            MessagesPlaceholder(variable_name="agent_scratchpad")
-        ])
+Be thorough, use all tools, and provide clear reasoning for every decision."""
 
-        # Create LangChain agent
-        agent = create_openai_functions_agent(self.llm, self.tools, self.prompt)
-        self.agent_executor = AgentExecutor(
-            agent=agent,
-            tools=self.tools,
-            verbose=True,
-            max_iterations=5,
-            return_intermediate_steps=True
-        )
+        # Bind tools to LLM (newer LangChain pattern)
+        self.llm_with_tools = self.llm.bind_tools(self.tools)
+
+        # Create tool map for easy lookup
+        self.tool_map = {tool.name: tool for tool in self.tools}
 
         self.logger.info("Leave Agent initialized with LangChain + GPT-4o-mini")
+
+    async def _run_agent_loop(self, user_input: str, max_iterations: int = 5) -> tuple[str, list]:
+        """Run the agent loop with tool calling (newer LangChain pattern)."""
+        messages = [
+            {"role": "system", "content": self.system_prompt},
+            {"role": "user", "content": user_input}
+        ]
+
+        intermediate_steps = []
+
+        for i in range(max_iterations):
+            # Get LLM response with potential tool calls
+            response = await self.llm_with_tools.ainvoke(messages)
+
+            # Check if LLM wants to call tools
+            if not response.tool_calls:
+                # No more tool calls - LLM has made final decision
+                return response.content, intermediate_steps
+
+            # Execute tool calls
+            messages.append(response)
+            for tool_call in response.tool_calls:
+                tool_name = tool_call['name']
+                tool_args = tool_call['args']
+
+                self.logger.info(f"LLM calling tool: {tool_name} with args: {tool_args}")
+
+                # Execute the tool (all tools are async)
+                try:
+                    tool = self.tool_map[tool_name]
+                    tool_result = await tool.ainvoke(tool_args)
+
+                    intermediate_steps.append((tool_name, tool_args, tool_result))
+
+                    # Add tool result to messages (tool_result is already JSON string)
+                    messages.append({
+                        "role": "tool",
+                        "content": str(tool_result),
+                        "tool_call_id": tool_call['id']
+                    })
+                except Exception as e:
+                    self.logger.error(f"Tool execution error: {e}")
+                    import traceback
+                    traceback.print_exc()
+                    messages.append({
+                        "role": "tool",
+                        "content": json.dumps({"error": str(e)}),
+                        "tool_call_id": tool_call['id']
+                    })
+
+        # Max iterations reached - return last response
+        return "ERROR: Max iterations reached without final decision", intermediate_steps
 
     async def execute(self, input_data: LeaveRequestInput) -> LeaveValidationOutput:
         """
@@ -230,11 +274,7 @@ Then make your decision following the decision criteria in your instructions.
 
             # Execute LangChain agent
             self.logger.info(f"Invoking LLM agent for leave request validation")
-            result = await self.agent_executor.ainvoke({"input": llm_input})
-
-            # Parse LLM decision
-            llm_output = result['output']
-            intermediate_steps = result.get('intermediate_steps', [])
+            llm_output, intermediate_steps = await self._run_agent_loop(llm_input)
 
             self.logger.info(f"LLM decision: {llm_output}")
 
@@ -278,6 +318,9 @@ Then make your decision following the decision criteria in your instructions.
                     days_requested,
                     decision_info['decision'] == 'AUTO_APPROVE'
                 )
+                await db.flush()  # Ensure ID is assigned
+                await db.refresh(leave_request)  # Load all attributes to avoid lazy loading issues
+                leave_request_id = leave_request.id  # Cache ID to avoid lazy loading issues
 
                 # Handle decision
                 if decision_info['decision'] == 'AUTO_APPROVE':
@@ -295,7 +338,7 @@ Then make your decision following the decision criteria in your instructions.
                         required_approvals=[],
                         recommended_actions=[decision_info['recommendations']],
                         workflow_id=workflow_id,
-                        leave_request_id=leave_request.id
+                        leave_request_id=leave_request_id
                     )
 
                 elif decision_info['decision'] == 'ESCALATE':
@@ -319,7 +362,7 @@ Then make your decision following the decision criteria in your instructions.
                         required_approvals=["manager"],
                         recommended_actions=[decision_info['recommendations']],
                         workflow_id=workflow_id,
-                        leave_request_id=leave_request.id
+                        leave_request_id=leave_request_id
                     )
 
                 else:  # REJECT
@@ -337,7 +380,7 @@ Then make your decision following the decision criteria in your instructions.
                         required_approvals=[],
                         recommended_actions=[decision_info['recommendations']],
                         workflow_id=workflow_id,
-                        leave_request_id=leave_request.id
+                        leave_request_id=leave_request_id
                     )
 
         except Exception as e:
@@ -373,15 +416,7 @@ Then make your decision following the decision criteria in your instructions.
     # LangChain Tool Functions (called by LLM)
     # ========================================================================
 
-    def _tool_check_leave_balance(self, user_id: int, leave_type: str, days_requested: float) -> str:
-        """
-        Tool function for LLM to check employee leave balance.
-        Must be synchronous for LangChain tools.
-        """
-        import asyncio
-        return asyncio.run(self._check_leave_balance_async(user_id, leave_type, days_requested))
-
-    async def _check_leave_balance_async(self, user_id: int, leave_type: str, days_requested: float) -> str:
+    async def _tool_check_leave_balance(self, user_id: int, leave_type: str, days_requested: float) -> str:
         """Async implementation of balance check."""
         current_year = date.today().year
 
@@ -423,15 +458,7 @@ Then make your decision following the decision criteria in your instructions.
                 "message": f"Employee has {remaining_days} days remaining (out of {balance.total_days + balance.carried_forward} total). Request is for {days_requested} days. {'Sufficient balance.' if sufficient else 'INSUFFICIENT BALANCE - this is a blocking issue.'}"
             })
 
-    def _tool_detect_conflicts(self, user_id: int, start_date: str, end_date: str) -> str:
-        """
-        Tool function for LLM to detect leave conflicts.
-        Must be synchronous for LangChain tools.
-        """
-        import asyncio
-        return asyncio.run(self._detect_conflicts_async(user_id, start_date, end_date))
-
-    async def _detect_conflicts_async(self, user_id: int, start_date: str, end_date: str) -> str:
+    async def _tool_detect_conflicts(self, user_id: int, start_date: str, end_date: str) -> str:
         """Async implementation of conflict detection."""
         start = datetime.strptime(start_date, "%Y-%m-%d").date()
         end = datetime.strptime(end_date, "%Y-%m-%d").date()
@@ -489,10 +516,10 @@ Then make your decision following the decision criteria in your instructions.
                       (f" WARNINGS: {', '.join(warnings)}" if warnings else "")
         })
 
-    def _tool_validate_business_rules(self, start_date: str, end_date: str, days_requested: int) -> str:
+    async def _tool_validate_business_rules(self, start_date: str, end_date: str, days_requested: int) -> str:
         """
         Tool function for LLM to validate business rules.
-        Synchronous (no DB access needed).
+        Async for consistency (no DB access needed).
         """
         start = datetime.strptime(start_date, "%Y-%m-%d").date()
         end = datetime.strptime(end_date, "%Y-%m-%d").date()
@@ -600,7 +627,7 @@ Then make your decision following the decision criteria in your instructions.
         return ["leave_balance", "conflicts", "business_rules"]  # Default
 
     async def _get_balance_id(self, db: AsyncSession, user_id: int, leave_type: str) -> int:
-        """Get balance ID for updating after approval."""
+        """Get balance ID for updating after approval, create if doesn't exist."""
         current_year = date.today().year
         result = await db.execute(
             select(LeaveBalance).where(
@@ -611,7 +638,21 @@ Then make your decision following the decision criteria in your instructions.
                 )
             )
         )
-        balance = result.scalar_one()
+        balance = result.scalar_one_or_none()
+
+        # Create balance if it doesn't exist
+        if not balance:
+            balance = LeaveBalance(
+                user_id=user_id,
+                leave_type=leave_type,
+                total_days=20.0,  # Default allocation
+                used_days=0.0,
+                carried_forward=0.0,
+                year=current_year
+            )
+            db.add(balance)
+            await db.flush()  # Get the ID without committing
+
         return balance.id
 
     async def _create_leave_request(
