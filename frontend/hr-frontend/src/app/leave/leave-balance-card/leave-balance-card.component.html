@@ -1,0 +1,66 @@
+<div class="balance-container">
+  <div class="header">
+    <h2 class="title">Leave Balances</h2>
+    <select [(ngModel)]="selectedYear" (change)="onYearChange()" class="year-select">
+      <option *ngFor="let year of getAvailableYears()" [value]="year">{{ year }}</option>
+    </select>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner">Loading balances...</div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-banner" *ngIf="error">
+    <span class="error-icon">⚠️</span>
+    <span>{{ error }}</span>
+  </div>
+
+  <!-- Balances Grid -->
+  <div class="balances-grid" *ngIf="!isLoading && !error">
+    <div class="balance-card" *ngFor="let balance of balances">
+      <div class="card-header">
+        <h3 class="leave-type">{{ getLeaveTypeLabel(balance.leave_type) }}</h3>
+        <span class="year-badge">{{ balance.year }}</span>
+      </div>
+
+      <div class="balance-stats">
+        <div class="stat-item">
+          <span class="stat-label">Total</span>
+          <span class="stat-value">{{ balance.total_days }} days</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Used</span>
+          <span class="stat-value used">{{ balance.used_days }} days</span>
+        </div>
+        <div class="stat-item highlight">
+          <span class="stat-label">Remaining</span>
+          <span class="stat-value remaining">{{ balance.remaining_days }} days</span>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div
+            class="progress-fill"
+            [ngClass]="getProgressBarClass(getUsagePercentage(balance))"
+            [style.width.%]="getUsagePercentage(balance)"
+          ></div>
+        </div>
+        <span class="progress-label">{{ getUsagePercentage(balance).toFixed(0) }}% used</span>
+      </div>
+
+      <div class="carried-forward" *ngIf="balance.carried_forward > 0">
+        <span class="cf-icon">📦</span>
+        <span class="cf-text">{{ balance.carried_forward }} days carried forward</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && !error && balances.length === 0">
+    <span class="empty-icon">📊</span>
+    <p class="empty-text">No leave balances available for {{ selectedYear }}</p>
+  </div>
+</div>

@@ -1,0 +1,225 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.approvals-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  @include text-primary;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, $primary, $primary-light);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  @include text-secondary;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.loading-container {
+  @include glass-card;
+  text-align: center;
+  padding: 3rem;
+}
+
+.loading-spinner {
+  @include text-primary;
+  font-size: 1.1rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.error-banner {
+  @include glass-card;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: $error;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.empty-state {
+  @include glass-card;
+  text-align: center;
+  padding: 3rem;
+}
+
+.approvals-grid {
+  display: grid;
+  gap: 2rem;
+}
+
+.approval-card {
+  @include glass-card;
+  animation: slideIn 0.4s ease-out;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  [data-theme=light] & {
+    border-bottom-color: rgba(0, 0, 0, 0.1);
+  }
+
+  [data-theme=dark] & {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.employee-name {
+  @include text-primary;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.priority-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid;
+
+  &.priority-high {
+    background: rgba(239, 68, 68, 0.15);
+    color: $error;
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+
+  &.priority-normal {
+    background: rgba(245, 158, 11, 0.15);
+    color: $warning;
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+
+  &.priority-low {
+    background: rgba(16, 185, 129, 0.15);
+    color: $success;
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+}
+
+.request-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+
+  [data-theme=light] & {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  [data-theme=dark] & {
+    background: rgba(255, 255, 255, 0.02);
+  }
+}
+
+.detail-label {
+  @include text-secondary;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.detail-value {
+  @include text-primary;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.btn-approve {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, $success, lighten($success, 10%));
+  color: white;
+  border: 1px solid $success;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.btn-reject {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid $error;
+  color: $error;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.1);
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  @include glass-card;
+  max-width: 600px;
+  width: 100%;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

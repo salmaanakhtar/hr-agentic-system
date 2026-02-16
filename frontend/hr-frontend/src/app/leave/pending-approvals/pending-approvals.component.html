@@ -1,0 +1,138 @@
+<div class="approvals-container">
+  <div class="header">
+    <h2 class="title">Pending Approvals</h2>
+    <p class="subtitle">Review and approve leave requests from your team</p>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner">Loading approvals...</div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-banner" *ngIf="error">
+    <span class="error-icon">⚠️</span>
+    <span>{{ error }}</span>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && pendingApprovals.length === 0">
+    <span class="empty-icon">✅</span>
+    <p class="empty-text">No pending approvals</p>
+    <p class="empty-subtext">All leave requests have been processed</p>
+  </div>
+
+  <!-- Approval Cards -->
+  <div class="approvals-grid" *ngIf="!isLoading && pendingApprovals.length > 0">
+    <div class="approval-card" *ngFor="let approval of pendingApprovals">
+      <div class="card-header">
+        <div class="employee-info">
+          <h3 class="employee-name">{{ approval.employee_name || 'Employee' }}</h3>
+          <span class="department-badge" *ngIf="approval.department">{{ approval.department }}</span>
+        </div>
+        <span class="priority-badge" [ngClass]="getPriorityClass(approval.priority)">
+          <span class="priority-icon">{{ getPriorityIcon(approval.priority) }}</span>
+          {{ approval.priority | titlecase }}
+        </span>
+      </div>
+
+      <div class="request-details">
+        <div class="detail-row">
+          <span class="detail-label">Leave Type:</span>
+          <span class="detail-value leave-type">{{ approval.leave_request.leave_type | titlecase }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Dates:</span>
+          <span class="detail-value">
+            {{ formatDate(approval.leave_request.start_date) }} - {{ formatDate(approval.leave_request.end_date) }}
+          </span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Days:</span>
+          <span class="detail-value days">{{ approval.leave_request.days_requested }} days</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Submitted:</span>
+          <span class="detail-value">{{ formatDate(approval.submitted_at) }}</span>
+        </div>
+      </div>
+
+      <div class="reason-section">
+        <span class="section-label">Reason:</span>
+        <p class="reason-text">{{ approval.leave_request.reason }}</p>
+      </div>
+
+      <!-- LLM Reasoning Display -->
+      <div class="llm-section" *ngIf="approval.leave_request.llm_reasoning && approval.leave_request.llm_decision">
+        <app-llm-reasoning-display
+          [decision]="getDecision(approval.leave_request.llm_decision)"
+          [reasoning]="approval.leave_request.llm_reasoning"
+          [confidence]="0.85"
+          [factors]="[]"
+          [recommendations]="[]"
+        ></app-llm-reasoning-display>
+      </div>
+
+      <!-- Comments Input -->
+      <div class="comments-section">
+        <label for="comments-{{ approval.id }}" class="comments-label">Comments (Optional):</label>
+        <textarea
+          id="comments-{{ approval.id }}"
+          [(ngModel)]="approvalComments[approval.id]"
+          rows="2"
+          placeholder="Add comments for this approval..."
+          class="comments-input"
+        ></textarea>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn-reject" (click)="openRejectModal(approval)">
+          <span class="btn-icon">✗</span>
+          Reject
+        </button>
+        <button class="btn-approve" (click)="approveRequest(approval)">
+          <span class="btn-icon">✓</span>
+          Approve
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reject Modal -->
+  <div class="modal-overlay" *ngIf="showRejectModal" (click)="closeRejectModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Reject Leave Request</h3>
+        <button class="btn-close" (click)="closeRejectModal()">✕</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedApproval">
+        <p class="modal-text">
+          You are about to reject <strong>{{ selectedApproval.employee_name || 'Employee' }}'s</strong> leave request for
+          <strong>{{ selectedApproval.leave_request.days_requested }} days</strong>.
+        </p>
+        <div class="form-group">
+          <label for="rejection-reason" class="form-label">Rejection Reason (Required):</label>
+          <textarea
+            id="rejection-reason"
+            [(ngModel)]="rejectionReason"
+            rows="4"
+            placeholder="Please provide a clear reason for rejection..."
+            class="rejection-textarea"
+            autofocus
+          ></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeRejectModal()">Cancel</button>
+        <button
+          class="btn-confirm-reject"
+          (click)="confirmReject()"
+          [disabled]="!rejectionReason.trim()"
+        >
+          Confirm Rejection
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

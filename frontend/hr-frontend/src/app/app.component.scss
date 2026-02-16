@@ -1,0 +1,19 @@
+.app-container {
+  position: relative;
+  min-height: 100vh;
+}
+
+.global-theme-toggle {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
+}
+
+// Don't show double theme toggles on login/signup pages
+:host::ng-deep {
+  .login-page .theme-toggle-wrapper,
+  .signup-page .theme-toggle-wrapper {
+    display: none;
+  }
+}

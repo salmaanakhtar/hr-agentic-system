@@ -316,7 +316,9 @@ Then make your decision following the decision criteria in your instructions.
                     start_date,
                     end_date,
                     days_requested,
-                    decision_info['decision'] == 'AUTO_APPROVE'
+                    decision_info['decision'] == 'AUTO_APPROVE',
+                    llm_decision=decision_info['decision'],
+                    llm_reasoning=decision_info['reasoning']
                 )
                 await db.flush()  # Ensure ID is assigned
                 await db.refresh(leave_request)  # Load all attributes to avoid lazy loading issues
@@ -662,7 +664,9 @@ Then make your decision following the decision criteria in your instructions.
         start_date: date,
         end_date: date,
         days_requested: float,
-        auto_approved: bool
+        auto_approved: bool,
+        llm_decision: str = None,
+        llm_reasoning: str = None
     ) -> LeaveRequest:
         """Create leave request record in database."""
         leave_request = LeaveRequest(
@@ -675,7 +679,9 @@ Then make your decision following the decision criteria in your instructions.
             reason=input_data.reason,
             submitted_at=datetime.utcnow(),
             approved_at=datetime.utcnow() if auto_approved else None,
-            approved_by=None  # System auto-approval
+            approved_by=None,  # System auto-approval
+            llm_decision=llm_decision,
+            llm_reasoning=llm_reasoning
         )
 
         db.add(leave_request)

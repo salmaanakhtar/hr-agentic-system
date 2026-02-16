@@ -1,0 +1,115 @@
+<div class="calendar-container">
+  <div class="header">
+    <h2 class="title">Team Leave Calendar</h2>
+    <p class="subtitle">View approved leave and priority periods for your team</p>
+  </div>
+
+  <!-- Calendar Controls -->
+  <div class="calendar-controls">
+    <button class="btn-nav" (click)="previousMonth()" title="Previous month">‹</button>
+
+    <div class="month-year-selector">
+      <select [(ngModel)]="selectedMonth" (change)="onMonthChange()" class="month-select">
+        <option *ngFor="let month of months; let i = index" [value]="i + 1">
+          {{ month }}
+        </option>
+      </select>
+
+      <select [(ngModel)]="selectedYear" (change)="onYearChange()" class="year-select">
+        <option *ngFor="let year of getAvailableYears()" [value]="year">
+          {{ year }}
+        </option>
+      </select>
+    </div>
+
+    <button class="btn-nav" (click)="nextMonth()" title="Next month">›</button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner">Loading calendar...</div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-banner" *ngIf="error">
+    <span class="error-icon">⚠️</span>
+    <span>{{ error }}</span>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="calendar-card" *ngIf="!isLoading && !error">
+    <!-- Weekday Headers -->
+    <div class="calendar-weekdays">
+      <div class="weekday-header" *ngFor="let day of weekDays">{{ day }}</div>
+    </div>
+
+    <!-- Calendar Days -->
+    <div class="calendar-grid">
+      <div
+        *ngFor="let day of calendarDays"
+        class="calendar-day"
+        [ngClass]="{
+          'other-month': !day.isCurrentMonth,
+          'past-day': day.isPast && day.isCurrentMonth,
+          'today': day.isToday,
+          'has-leave': day.leaves.length > 0,
+          'has-priority': day.priorityPeriods.length > 0
+        }"
+      >
+        <div class="day-number">{{ day.date }}</div>
+
+        <!-- Priority Period Indicator -->
+        <div class="priority-indicator" *ngIf="day.priorityPeriods.length > 0 && day.isCurrentMonth">
+          <span
+            *ngFor="let period of day.priorityPeriods"
+            class="priority-badge"
+            [ngClass]="{'blackout': period.is_blackout, 'priority': !period.is_blackout}"
+            [title]="period.name + ': ' + period.description"
+          >
+            {{ period.is_blackout ? '🚫' : '⚠️' }}
+          </span>
+        </div>
+
+        <!-- Leave Entries -->
+        <div class="leave-entries" *ngIf="day.leaves.length > 0 && day.isCurrentMonth">
+          <div
+            *ngFor="let leave of day.leaves"
+            class="leave-entry"
+            [style.background-color]="getLeaveTypeColor(leave.leave_type)"
+            [title]="leave.user_name + ' - ' + leave.leave_type + ' (' + leave.days_requested + ' days)'"
+          >
+            <span class="leave-employee">{{ leave.user_name }}</span>
+            <span class="leave-type-short">{{ leave.leave_type.substring(0, 3) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="calendar-legend" *ngIf="!isLoading && !error">
+    <h3 class="legend-title">Legend</h3>
+    <div class="legend-items">
+      <div class="legend-item">
+        <span class="legend-color" style="background-color: #6366f1;"></span>
+        <span>Vacation</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background-color: #f59e0b;"></span>
+        <span>Sick Leave</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color" style="background-color: #8b5cf6;"></span>
+        <span>Personal</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-icon">⚠️</span>
+        <span>Priority Period</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-icon">🚫</span>
+        <span>Blackout Period</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,50 @@
+<div class="llm-reasoning-container">
+  <div class="reasoning-header">
+    <div class="decision-badge" [ngClass]="getDecisionClass()">
+      <span class="decision-icon">{{ getDecisionIcon() }}</span>
+      <span class="decision-text">{{ (decision || 'PENDING').replace('_', ' ') }}</span>
+    </div>
+
+    <div class="confidence-container">
+      <span class="confidence-label">Confidence:</span>
+      <div class="confidence-bar">
+        <div
+          class="confidence-fill"
+          [ngClass]="getConfidenceClass()"
+          [style.width.%]="confidence * 100"
+        ></div>
+      </div>
+      <span class="confidence-value">{{ (confidence * 100).toFixed(0) }}%</span>
+    </div>
+
+    <button class="btn-copy" (click)="copyToClipboard()" title="Copy reasoning to clipboard">
+      <span>📋</span>
+    </button>
+  </div>
+
+  <div class="reasoning-content" [class.expanded]="isExpanded">
+    <div class="reasoning-section">
+      <h4 class="section-title">AI Reasoning</h4>
+      <p class="reasoning-text">{{ reasoning || 'No reasoning provided.' }}</p>
+    </div>
+
+    <div class="reasoning-section" *ngIf="factors && factors.length > 0">
+      <h4 class="section-title">Factors Considered</h4>
+      <div class="factors-chips">
+        <span class="factor-chip" *ngFor="let factor of factors">{{ factor }}</span>
+      </div>
+    </div>
+
+    <div class="reasoning-section" *ngIf="recommendations && recommendations.length > 0">
+      <h4 class="section-title">Recommendations</h4>
+      <ul class="recommendations-list">
+        <li *ngFor="let recommendation of recommendations">{{ recommendation }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <button class="btn-toggle" (click)="toggleExpanded()">
+    {{ isExpanded ? 'Show Less' : 'Show More' }}
+    <span class="toggle-icon">{{ isExpanded ? '▲' : '▼' }}</span>
+  </button>
+</div>

@@ -1,0 +1,132 @@
+<div class="leave-request-container">
+  <div class="form-card">
+    <div class="form-header">
+      <h2 class="form-title">Request Leave</h2>
+      <p class="form-subtitle">Submit a new leave request for AI review</p>
+    </div>
+
+    <form [formGroup]="leaveForm" (ngSubmit)="onSubmit()" class="leave-form">
+      <!-- Leave Type -->
+      <div class="form-group">
+        <label for="leave_type" class="form-label">Leave Type</label>
+        <div class="select-wrapper">
+          <select
+            id="leave_type"
+            formControlName="leave_type"
+            class="form-select"
+          >
+            <option *ngFor="let type of leaveTypes" [value]="type.value">
+              {{ type.label }}
+            </option>
+          </select>
+          <span class="select-arrow">▼</span>
+        </div>
+      </div>
+
+      <!-- Date Range -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="start_date" class="form-label">Start Date</label>
+          <input
+            type="date"
+            id="start_date"
+            formControlName="start_date"
+            [min]="minDate"
+            class="form-input"
+          />
+          <div class="error-message" *ngIf="leaveForm.get('start_date')?.touched && leaveForm.get('start_date')?.errors?.['required']">
+            Start date is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="end_date" class="form-label">End Date</label>
+          <input
+            type="date"
+            id="end_date"
+            formControlName="end_date"
+            [min]="minEndDate"
+            class="form-input"
+          />
+          <div class="error-message" *ngIf="leaveForm.get('end_date')?.touched && leaveForm.get('end_date')?.errors?.['required']">
+            End date is required
+          </div>
+        </div>
+      </div>
+
+      <!-- Date Range Error -->
+      <div class="error-message" *ngIf="leaveForm.errors?.['dateRange'] && leaveForm.touched">
+        End date must be on or after start date
+      </div>
+
+      <!-- Total Days Badge -->
+      <div class="days-badge" *ngIf="totalDays > 0">
+        <span class="days-icon">📅</span>
+        <span class="days-text">{{ totalDays }} day{{ totalDays > 1 ? 's' : '' }}</span>
+      </div>
+
+      <!-- Reason -->
+      <div class="form-group">
+        <label for="reason" class="form-label">Reason</label>
+        <textarea
+          id="reason"
+          formControlName="reason"
+          rows="4"
+          placeholder="Please provide a detailed reason for your leave request..."
+          class="form-textarea"
+        ></textarea>
+        <div class="error-message" *ngIf="leaveForm.get('reason')?.touched && leaveForm.get('reason')?.errors">
+          <span *ngIf="leaveForm.get('reason')?.errors?.['required']">Reason is required</span>
+          <span *ngIf="leaveForm.get('reason')?.errors?.['minlength']">Reason must be at least 10 characters</span>
+        </div>
+      </div>
+
+      <!-- Error Banner -->
+      <div class="error-banner" *ngIf="submitError">
+        <span class="error-icon">⚠️</span>
+        <span>{{ submitError }}</span>
+      </div>
+
+      <!-- Success Banner -->
+      <div class="success-banner" *ngIf="submitSuccess">
+        <span class="success-icon">✓</span>
+        <span>Leave request submitted successfully!</span>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="form-actions">
+        <button
+          type="button"
+          class="btn-secondary"
+          (click)="resetForm()"
+          [disabled]="isSubmitting"
+        >
+          Reset
+        </button>
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="leaveForm.invalid || isSubmitting"
+        >
+          <span *ngIf="!isSubmitting">Submit Request</span>
+          <span *ngIf="isSubmitting" class="loading-spinner">Submitting...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- LLM Result Display -->
+  <div class="result-container" *ngIf="llmResult">
+    <app-llm-reasoning-display
+      [decision]="llmDecision"
+      [reasoning]="llmResult.reasoning"
+      [confidence]="llmConfidence"
+      [factors]="llmFactors"
+      [recommendations]="llmRecommendations"
+    ></app-llm-reasoning-display>
+
+    <button class="btn-view-history" (click)="viewHistory()">
+      View Leave History →
+    </button>
+  </div>
+</div>

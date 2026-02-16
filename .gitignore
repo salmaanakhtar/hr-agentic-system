@@ -37,3 +37,9 @@ backend/HR_Agentic_System_API.postman_collection.json
 backend/POSTMAN_TESTING_GUIDE.md
 backend/PHASE_3.4_COMPLETE.md
 SESSION_2_SUMMARY.md
+.claude/settings.local.json
+backend/add_llm_columns.py
+backend/check_leave_requests.py
+backend/clear_database.py
+backend/clear_leave_data.py
+backend/create_default_balances.py

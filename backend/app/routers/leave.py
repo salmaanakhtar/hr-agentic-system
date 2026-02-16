@@ -272,30 +272,38 @@ async def get_pending_approvals(
     if current_user.role.name not in ["manager", "hr", "admin"]:
         raise HTTPException(status_code=403, detail="Only managers and HR can view pending approvals")
 
-    # Get pending leave requests
+    # Get pending leave requests with employee names
     # TODO: Filter by department/team once org structure is in place
-    query = select(LeaveRequest).where(
+    query = select(LeaveRequest, Employee).join(
+        Employee, LeaveRequest.user_id == Employee.user_id
+    ).where(
         LeaveRequest.status == LeaveRequestStatus.SUBMITTED.value
     ).order_by(LeaveRequest.submitted_at.asc())
 
     result = await db.execute(query)
-    requests = result.scalars().all()
+    rows = result.all()
+
+    # Build response with cached values to avoid lazy loading
+    pending_approvals = []
+    for req, employee in rows:
+        employee_name = f"{employee.first_name} {employee.last_name}"
+        pending_approvals.append({
+            "id": req.id,
+            "user_id": req.user_id,
+            "employee_name": employee_name,
+            "leave_type": req.leave_type,
+            "start_date": req.start_date.isoformat(),
+            "end_date": req.end_date.isoformat(),
+            "days_requested": req.days_requested,
+            "reason": req.reason,
+            "submitted_at": req.submitted_at.isoformat() if req.submitted_at else None,
+            "llm_decision": req.llm_decision,
+            "llm_reasoning": req.llm_reasoning
+        })
 
     return {
-        "total": len(requests),
-        "pending_approvals": [
-            {
-                "id": req.id,
-                "user_id": req.user_id,
-                "leave_type": req.leave_type,
-                "start_date": req.start_date.isoformat(),
-                "end_date": req.end_date.isoformat(),
-                "days_requested": req.days_requested,
-                "reason": req.reason,
-                "submitted_at": req.submitted_at.isoformat() if req.submitted_at else None
-            }
-            for req in requests
-        ]
+        "total": len(pending_approvals),
+        "pending_approvals": pending_approvals
     }
 
 
@@ -379,6 +387,147 @@ async def approve_or_reject_leave(
     }
 
 
+@router.post("/requests/{request_id}/approve")
+async def approve_leave_request(
+    request_id: int,
+    request_body: dict = {},
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """
+    Approve a leave request.
+
+    Only managers and HR can approve requests.
+    """
+    # Cache role name to avoid lazy loading
+    user_role = current_user.role.name
+
+    if user_role not in ["manager", "hr", "admin"]:
+        raise HTTPException(status_code=403, detail="Only managers and HR can approve requests")
+
+    # Get the request
+    result = await db.execute(
+        select(LeaveRequest).where(LeaveRequest.id == request_id)
+    )
+    leave_request = result.scalar_one_or_none()
+
+    if not leave_request:
+        raise HTTPException(status_code=404, detail="Leave request not found")
+
+    # Check if request is in submitted status
+    if leave_request.status != LeaveRequestStatus.SUBMITTED.value:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot approve request with status: {leave_request.status}"
+        )
+
+    # Cache values before modification
+    user_id = leave_request.user_id
+    leave_type = leave_request.leave_type
+    days_requested = leave_request.days_requested
+
+    # Approve the request
+    leave_request.status = LeaveRequestStatus.APPROVED.value
+    leave_request.approved_at = datetime.utcnow()
+    leave_request.approved_by = current_user.id
+    leave_request.updated_at = datetime.utcnow()
+
+    # Deduct from leave balance
+    current_year = date.today().year
+    balance_result = await db.execute(
+        select(LeaveBalance).where(
+            and_(
+                LeaveBalance.user_id == user_id,
+                LeaveBalance.leave_type == leave_type,
+                LeaveBalance.year == current_year
+            )
+        )
+    )
+    balance = balance_result.scalar_one_or_none()
+
+    if balance:
+        balance.used_days += days_requested
+        balance.updated_at = datetime.utcnow()
+
+    # Cache response values before commit
+    request_id_cached = leave_request.id
+    request_status = leave_request.status
+
+    await db.commit()
+
+    logger.info(f"Manager {current_user.id} approved leave request {request_id}")
+
+    return {
+        "success": True,
+        "message": "Leave request approved successfully",
+        "request": {
+            "id": request_id_cached,
+            "status": request_status
+        }
+    }
+
+
+@router.post("/requests/{request_id}/reject")
+async def reject_leave_request(
+    request_id: int,
+    request_body: dict,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_async_db)
+):
+    """
+    Reject a leave request.
+
+    Only managers and HR can reject requests.
+    """
+    # Cache role name to avoid lazy loading
+    user_role = current_user.role.name
+
+    if user_role not in ["manager", "hr", "admin"]:
+        raise HTTPException(status_code=403, detail="Only managers and HR can reject requests")
+
+    reason = request_body.get("reason", "Rejected by manager")
+
+    # Get the request
+    result = await db.execute(
+        select(LeaveRequest).where(LeaveRequest.id == request_id)
+    )
+    leave_request = result.scalar_one_or_none()
+
+    if not leave_request:
+        raise HTTPException(status_code=404, detail="Leave request not found")
+
+    # Check if request is in submitted status
+    if leave_request.status != LeaveRequestStatus.SUBMITTED.value:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot reject request with status: {leave_request.status}"
+        )
+
+    # Reject the request
+    leave_request.status = LeaveRequestStatus.REJECTED.value
+    leave_request.rejected_at = datetime.utcnow()
+    leave_request.rejected_by = current_user.id
+    leave_request.rejection_reason = reason
+    leave_request.updated_at = datetime.utcnow()
+
+    # Cache response values before commit
+    request_id_cached = leave_request.id
+    request_status = leave_request.status
+
+    await db.commit()
+
+    logger.info(f"Manager {current_user.id} rejected leave request {request_id}")
+
+    return {
+        "success": True,
+        "message": "Leave request rejected",
+        "request": {
+            "id": request_id_cached,
+            "status": request_status
+        }
+    }
+
+
 @router.get("/team-calendar")
 async def get_team_calendar(
     department: Optional[str] = Query(None, description="Filter by department"),
@@ -414,8 +563,10 @@ async def get_team_calendar(
         else:
             end_of_month = today.replace(month=today.month + 1, day=1)
 
-    # Get approved leave requests for the month
-    leave_query = select(LeaveRequest).where(
+    # Get approved leave requests for the month with employee names
+    leave_query = select(LeaveRequest, Employee).join(
+        Employee, LeaveRequest.user_id == Employee.user_id
+    ).where(
         and_(
             LeaveRequest.status == LeaveRequestStatus.APPROVED.value,
             or_(
@@ -429,7 +580,7 @@ async def get_team_calendar(
     # TODO: Add department filter once org structure is in place
 
     leave_result = await db.execute(leave_query)
-    leave_requests = leave_result.scalars().all()
+    leave_rows = leave_result.all()
 
     # Get priority periods for the month
     priority_query = select(PriorityPeriod).where(
@@ -443,19 +594,24 @@ async def get_team_calendar(
     priority_result = await db.execute(priority_query)
     priority_periods = priority_result.scalars().all()
 
+    # Build leave requests with employee names
+    leave_entries = []
+    for req, employee in leave_rows:
+        employee_name = f"{employee.first_name} {employee.last_name}"
+        leave_entries.append({
+            "id": req.id,
+            "user_id": req.user_id,
+            "user_name": employee_name,
+            "leave_type": req.leave_type,
+            "start_date": req.start_date.isoformat(),
+            "end_date": req.end_date.isoformat(),
+            "days_requested": req.days_requested,
+            "status": req.status
+        })
+
     return {
         "month": month or f"{start_of_month.year}-{start_of_month.month:02d}",
-        "leave_requests": [
-            {
-                "id": req.id,
-                "user_id": req.user_id,
-                "leave_type": req.leave_type,
-                "start_date": req.start_date.isoformat(),
-                "end_date": req.end_date.isoformat(),
-                "days_requested": req.days_requested
-            }
-            for req in leave_requests
-        ],
+        "leave_requests": leave_entries,
         "priority_periods": [
             {
                 "id": period.id,

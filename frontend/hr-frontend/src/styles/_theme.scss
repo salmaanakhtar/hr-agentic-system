@@ -108,13 +108,25 @@ a {
   }
 }
 
-// Form elements reset
+// Form elements reset and color inheritance
 button,
 input,
 textarea,
 select {
   font-family: inherit;
   font-size: inherit;
+  color: var(--text-primary);
+}
+
+// Labels and text should always be visible
+label {
+  color: var(--text-primary);
+}
+
+// Ensure readable placeholder text
+::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
 }
 
 // Utility classes

@@ -1,0 +1,276 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.balance-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title {
+  @include text-primary;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, $primary, $primary-light);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.year-select {
+  @include glass-input;
+  padding: 0.6rem 1rem;
+  font-weight: 600;
+}
+
+.loading-container {
+  @include glass-card;
+  text-align: center;
+  padding: 3rem;
+}
+
+.loading-spinner {
+  @include text-primary;
+  font-size: 1.1rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.error-banner {
+  @include glass-card;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: $error;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.error-icon {
+  font-size: 1.5rem;
+}
+
+.balances-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.balance-card {
+  @include glass-card;
+  animation: fadeIn 0.4s ease-out;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid;
+
+  [data-theme='light'] & {
+    border-bottom-color: rgba(0, 0, 0, 0.1);
+  }
+
+  [data-theme='dark'] & {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.leave-type {
+  @include text-primary;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.year-badge {
+  padding: 0.3rem 0.7rem;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: rgba(99, 102, 241, 0.15);
+  color: $primary;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.balance-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+
+  [data-theme='light'] & {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  [data-theme='dark'] & {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  &.highlight {
+    [data-theme='light'] & {
+      background: rgba(99, 102, 241, 0.08);
+    }
+
+    [data-theme='dark'] & {
+      background: rgba(129, 140, 248, 0.08);
+    }
+  }
+}
+
+.stat-label {
+  @include text-secondary;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  @include text-primary;
+  font-size: 1.2rem;
+  font-weight: 700;
+
+  &.used {
+    color: $warning;
+  }
+
+  &.remaining {
+    color: $success;
+  }
+}
+
+.progress-container {
+  margin-bottom: 1rem;
+}
+
+.progress-bar {
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+
+  [data-theme='light'] & {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  [data-theme='dark'] & {
+    background: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.5s ease, background-color 0.3s ease;
+
+  &.progress-good {
+    background: linear-gradient(90deg, $success, lighten($success, 10%));
+  }
+
+  &.progress-warning {
+    background: linear-gradient(90deg, $warning, lighten($warning, 10%));
+  }
+
+  &.progress-critical {
+    background: linear-gradient(90deg, $error, lighten($error, 10%));
+  }
+}
+
+.progress-label {
+  @include text-secondary;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.carried-forward {
+  @include glass-panel;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.cf-icon {
+  font-size: 1.2rem;
+}
+
+.cf-text {
+  @include text-primary;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.empty-state {
+  @include glass-card;
+  text-align: center;
+  padding: 3rem;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-text {
+  @include text-secondary;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (max-width: 768px) {
+  .balances-grid {
+    grid-template-columns: 1fr;
+  }
+}

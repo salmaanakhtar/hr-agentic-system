@@ -113,6 +113,8 @@ class LeaveRequest(Base):
     rejected_at = Column(DateTime, nullable=True)
     rejected_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     rejection_reason = Column(Text, nullable=True)
+    llm_decision = Column(String, nullable=True)  # AUTO_APPROVE, ESCALATE, REJECT
+    llm_reasoning = Column(Text, nullable=True)  # AI reasoning explanation
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
