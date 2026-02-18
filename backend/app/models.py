@@ -154,6 +154,79 @@ class PriorityPeriod(Base):
         return 0
 
 
+class ExpenseCategory(str, Enum):
+    MEALS = "meals"
+    TRAVEL = "travel"
+    EQUIPMENT = "equipment"
+    ENTERTAINMENT = "entertainment"
+    OFFICE_SUPPLIES = "office_supplies"
+    OTHER = "other"
+
+
+class ExpenseStatus(str, Enum):
+    DRAFT = "draft"
+    SUBMITTED = "submitted"
+    APPROVED = "approved"
+    REJECTED = "rejected"
+    CANCELLED = "cancelled"
+
+
+class Expense(Base):
+    __tablename__ = "expenses"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("employees.user_id"), index=True)
+    amount = Column(Float, nullable=False)
+    category = Column(String, index=True)
+    vendor = Column(String, nullable=True)
+    date = Column(Date, index=True)
+    description = Column(Text, nullable=True)
+    receipt_filename = Column(String, nullable=True)
+    receipt_path = Column(String, nullable=True)
+    ocr_text = Column(Text, nullable=True)
+    ocr_confidence = Column(Float, nullable=True)  # 0.0-1.0 overall confidence
+    ocr_extracted = Column(JSON, nullable=True)     # per-field extracted data + confidence
+    status = Column(String, default=ExpenseStatus.DRAFT.value, index=True)
+    llm_decision = Column(String, nullable=True)    # AUTO_APPROVE, ESCALATE, REJECT
+    llm_reasoning = Column(Text, nullable=True)
+    submitted_at = Column(DateTime, nullable=True)
+    reviewed_at = Column(DateTime, nullable=True)
+    reviewed_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    rejection_reason = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    employee = relationship("Employee")
+    reviewer = relationship("User", foreign_keys=[reviewed_by])
+
+    @property
+    def is_pending(self) -> bool:
+        return self.status == ExpenseStatus.SUBMITTED.value
+
+    @property
+    def is_approved(self) -> bool:
+        return self.status == ExpenseStatus.APPROVED.value
+
+    @property
+    def receipt_url(self) -> str:
+        if self.receipt_filename:
+            return f"/uploads/receipts/{self.receipt_filename}"
+        return None
+
+
+class ExpensePolicy(Base):
+    __tablename__ = "expense_policies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    category = Column(String, unique=True, index=True)
+    max_amount = Column(Float, nullable=False)           # Hard reject above this
+    approval_threshold = Column(Float, nullable=False)   # Auto-approve below this
+    requires_receipt = Column(Boolean, default=True)
+    description = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class WorkflowState(Base):
     __tablename__ = "workflow_states"
 
