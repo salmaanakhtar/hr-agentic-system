@@ -14,3 +14,6 @@ langchain-community==0.0.38
 langchain-core==0.1.53
 numpy<2
 easyocr
+Pillow
+python-multipart
+aiofiles
