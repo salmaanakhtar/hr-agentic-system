@@ -8,6 +8,7 @@ This should be called during application startup.
 from agents.registry import registry
 from agents.examples import HelloWorldAgent
 from agents.leave_agent import LeaveAgent
+from agents.expense_agent import ExpenseAgent
 from agents.orchestrator import OrchestratorAgent
 import logging
 
@@ -30,6 +31,9 @@ def register_all_agents():
     # Register business logic agents
     registry.register(LeaveAgent())
     logger.info("Registered: LeaveAgent")
+
+    registry.register(ExpenseAgent())
+    logger.info("Registered: ExpenseAgent")
 
     # Register orchestrator
     registry.register(OrchestratorAgent())

@@ -11,10 +11,13 @@ from .schemas import (
     BasicAgentInput, BasicAgentOutput,
     WorkflowAgentInput, QueryAgentInput,
     DecisionAgentOutput, MultiStepAgentOutput, QueryAgentOutput,
-    LeaveRequestInput, ExpenseClaimInput, HiringRequestInput, PayrollQueryInput,
+    LeaveRequestInput, ExpenseClaimInput, ExpenseSubmitInput,
+    HiringRequestInput, PayrollQueryInput,
     LeaveDecisionOutput, LeaveValidationOutput, LeaveApprovalOutput,
-    ExpenseValidationOutput, CandidateRankingOutput
+    ExpenseValidationOutput, ExpenseApprovalOutput, OCRExtractionResult,
+    CandidateRankingOutput
 )
 from .examples import HelloWorldAgent
 from .leave_agent import LeaveAgent
+from .expense_agent import ExpenseAgent
 from .register_agents import register_all_agents
