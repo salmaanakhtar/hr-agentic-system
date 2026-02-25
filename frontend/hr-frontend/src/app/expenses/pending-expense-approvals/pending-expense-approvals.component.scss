@@ -1,0 +1,430 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.approvals-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.title {
+  @include text-primary;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, $primary, $primary-light);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  @include text-secondary;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.loading-container {
+  @include glass-card;
+  text-align: center;
+  padding: 3rem;
+}
+
+.loading-spinner {
+  @include text-secondary;
+  font-size: 1rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.error-banner {
+  @include glass-card;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: $error;
+}
+
+.error-icon { font-size: 1.25rem; }
+
+.empty-state {
+  @include glass-card;
+  text-align: center;
+  padding: 3rem;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 0.75rem;
+  opacity: 0.5;
+  color: $success;
+}
+
+.empty-text {
+  @include text-primary;
+  font-size: 1.1rem;
+  margin: 0 0 0.25rem;
+}
+
+.empty-sub {
+  @include text-secondary;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.approvals-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.approval-card {
+  @include glass-card;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.employee-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.employee-name {
+  @include text-primary;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.expense-id {
+  @include text-secondary;
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
+.header-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.llm-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1px solid;
+
+  &.badge-auto    { background: rgba(16,185,129,0.12); color: $success; border-color: rgba(16,185,129,0.3); }
+  &.badge-escalate { background: rgba(245,158,11,0.12); color: $warning; border-color: rgba(245,158,11,0.3); }
+  &.badge-reject  { background: rgba(239,68,68,0.12);  color: $error;   border-color: rgba(239,68,68,0.3); }
+  &.badge-neutral { background: rgba(107,114,128,0.12); color: #6b7280;  border-color: rgba(107,114,128,0.3); }
+}
+
+.ocr-warning {
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(245, 158, 11, 0.12);
+  color: $warning;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.expense-details {
+  @include glass-panel;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-label {
+  @include text-secondary;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  @include text-primary;
+  font-size: 0.9rem;
+}
+
+.category-badge {
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.375rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(99, 102, 241, 0.12);
+  color: $primary;
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  display: inline-block;
+}
+
+.amount-value {
+  @include text-primary;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $primary;
+}
+
+.receipt-row {
+  padding-top: 0.25rem;
+}
+
+.receipt-link {
+  color: $primary;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ocr-section,
+.llm-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.section-label {
+  @include text-primary;
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin: 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid;
+
+  [data-theme='light'] & { border-bottom-color: rgba(0, 0, 0, 0.07); }
+  [data-theme='dark'] & { border-bottom-color: rgba(255, 255, 255, 0.07); }
+}
+
+.comments-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.comments-label {
+  @include text-secondary;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.comments-input {
+  @include glass-input;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+  border-top: 1px solid;
+
+  [data-theme='light'] & { border-top-color: rgba(0, 0, 0, 0.07); }
+  [data-theme='dark'] & { border-top-color: rgba(255, 255, 255, 0.07); }
+}
+
+.btn-approve,
+.btn-reject {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.625rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+
+  &:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
+}
+
+.btn-approve {
+  background: $success;
+  color: white;
+  &:hover:not(:disabled) { background: darken(#10b981, 8%); transform: translateY(-1px); }
+}
+
+.btn-reject {
+  background: transparent;
+  border: 2px solid $error;
+  color: $error;
+  &:hover:not(:disabled) { background: rgba(239, 68, 68, 0.1); }
+}
+
+.btn-icon { font-weight: 800; }
+
+// Modal
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.25s ease;
+}
+
+.modal-content {
+  @include glass-card;
+  max-width: 560px;
+  width: 100%;
+  animation: slideUp 0.25s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.875rem;
+  border-bottom: 1px solid;
+
+  [data-theme='light'] & { border-bottom-color: rgba(0, 0, 0, 0.1); }
+  [data-theme='dark'] & { border-bottom-color: rgba(255, 255, 255, 0.1); }
+}
+
+.modal-title {
+  @include text-primary;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  @include text-secondary;
+  transition: all 0.2s;
+  padding: 0.2rem 0.5rem;
+
+  &:hover { @include text-primary; }
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.modal-text {
+  @include text-secondary;
+  font-size: 0.95rem;
+  margin: 0;
+
+  strong { @include text-primary; }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-label {
+  @include text-primary;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.required { color: $error; }
+
+.rejection-textarea {
+  @include glass-input;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid;
+
+  [data-theme='light'] & { border-top-color: rgba(0, 0, 0, 0.07); }
+  [data-theme='dark'] & { border-top-color: rgba(255, 255, 255, 0.07); }
+}
+
+.btn-cancel {
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid;
+  transition: all 0.2s;
+
+  [data-theme='light'] & { border-color: rgba(0,0,0,0.2); @include text-secondary; &:hover { border-color: $primary; color: $primary; } }
+  [data-theme='dark'] & { border-color: rgba(255,255,255,0.2); @include text-secondary; &:hover { border-color: $primary-light; color: $primary-light; } }
+}
+
+.btn-confirm-reject {
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: $error;
+  color: white;
+  border: none;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) { background: darken(#ef4444, 8%); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

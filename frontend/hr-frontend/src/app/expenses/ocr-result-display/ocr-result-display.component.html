@@ -1,0 +1,89 @@
+<div class="ocr-display" *ngIf="ocrResult">
+
+  <!-- Low confidence warning -->
+  <div class="low-confidence-banner" *ngIf="isLowConfidence">
+    <span class="banner-icon">⚠</span>
+    <span>OCR confidence is low ({{ overallConfidencePct }}%). A manager will manually review your receipt.</span>
+  </div>
+
+  <!-- Receipt preview + overall confidence -->
+  <div class="ocr-header">
+    <div class="receipt-preview" *ngIf="receiptUrl">
+      <a [href]="receiptUrl" target="_blank">
+        <img [src]="receiptUrl" alt="Receipt" class="receipt-thumb" />
+        <span class="preview-label">View full receipt</span>
+      </a>
+    </div>
+    <div class="confidence-summary">
+      <span class="confidence-label">Overall OCR confidence</span>
+      <div class="confidence-bar-wrap">
+        <div class="confidence-bar" [ngClass]="getConfidenceClass(ocrResult.overall_confidence)"
+             [style.width.%]="overallConfidencePct"></div>
+      </div>
+      <span class="confidence-value" [ngClass]="getConfidenceClass(ocrResult.overall_confidence)">
+        {{ overallConfidencePct }}%
+      </span>
+    </div>
+  </div>
+
+  <!-- Comparison table -->
+  <div class="comparison-grid">
+    <!-- Column headers -->
+    <div class="col-header"></div>
+    <div class="col-header">You entered</div>
+    <div class="col-header">OCR detected</div>
+    <div class="col-header">Confidence</div>
+
+    <!-- Amount row -->
+    <div class="row-label">Amount</div>
+    <div class="row-value">{{ submitted?.amount | currency }}</div>
+    <div class="row-value" [ngClass]="amountMismatch() ? 'mismatch' : 'match'">
+      {{ ocrResult.amount != null ? (ocrResult.amount | currency) : '—' }}
+      <span class="match-icon" *ngIf="ocrResult.amount != null">
+        {{ amountMismatch() ? '✗' : '✓' }}
+      </span>
+    </div>
+    <div class="row-confidence">
+      <div class="mini-bar-wrap">
+        <div class="mini-bar" [ngClass]="getConfidenceClass(ocrResult.amount_confidence)"
+             [style.width.%]="confidencePct(ocrResult.amount_confidence)"></div>
+      </div>
+      <span class="mini-value">{{ confidencePct(ocrResult.amount_confidence) }}%</span>
+    </div>
+
+    <!-- Vendor row -->
+    <div class="row-label">Vendor</div>
+    <div class="row-value">{{ submitted?.vendor || '—' }}</div>
+    <div class="row-value" [ngClass]="vendorMismatch() ? 'mismatch' : 'match'">
+      {{ ocrResult.vendor || '—' }}
+      <span class="match-icon" *ngIf="ocrResult.vendor">
+        {{ vendorMismatch() ? '✗' : '✓' }}
+      </span>
+    </div>
+    <div class="row-confidence">
+      <div class="mini-bar-wrap">
+        <div class="mini-bar" [ngClass]="getConfidenceClass(ocrResult.vendor_confidence)"
+             [style.width.%]="confidencePct(ocrResult.vendor_confidence)"></div>
+      </div>
+      <span class="mini-value">{{ confidencePct(ocrResult.vendor_confidence) }}%</span>
+    </div>
+
+    <!-- Date row -->
+    <div class="row-label">Date</div>
+    <div class="row-value">{{ submitted?.date || '—' }}</div>
+    <div class="row-value" [ngClass]="dateMismatch() ? 'mismatch' : 'match'">
+      {{ ocrResult.date || '—' }}
+      <span class="match-icon" *ngIf="ocrResult.date">
+        {{ dateMismatch() ? '✗' : '✓' }}
+      </span>
+    </div>
+    <div class="row-confidence">
+      <div class="mini-bar-wrap">
+        <div class="mini-bar" [ngClass]="getConfidenceClass(ocrResult.date_confidence)"
+             [style.width.%]="confidencePct(ocrResult.date_confidence)"></div>
+      </div>
+      <span class="mini-value">{{ confidencePct(ocrResult.date_confidence) }}%</span>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,160 @@
+<div class="history-container">
+  <div class="header">
+    <h2 class="title">Expense History</h2>
+    <p class="subtitle">Your submitted expense claims</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-card">
+    <div class="filter-group">
+      <label class="filter-label">Status</label>
+      <select class="filter-select" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
+        <option *ngFor="let s of statuses" [value]="s.value">{{ s.label }}</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Category</label>
+      <select class="filter-select" [(ngModel)]="selectedCategory" (change)="onFilterChange()">
+        <option *ngFor="let c of categories" [value]="c.value">{{ c.label }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner">Loading expenses...</div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-banner" *ngIf="error">
+    <span class="error-icon">⚠</span>
+    <span>{{ error }}</span>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!isLoading && !error && expenses.length === 0">
+    <span class="empty-icon">📄</span>
+    <p class="empty-text">No expenses found</p>
+    <p class="empty-sub">Submit your first expense claim to get started</p>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container" *ngIf="!isLoading && expenses.length > 0">
+    <table class="expense-table">
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Vendor</th>
+          <th>Amount</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Submitted</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="table-row" *ngFor="let expense of expenses">
+          <td>
+            <span class="category-badge">{{ formatCategory(expense.category) }}</span>
+          </td>
+          <td class="vendor-cell">{{ expense.vendor || '—' }}</td>
+          <td class="amount-cell">{{ formatCurrency(expense.amount) }}</td>
+          <td class="date-text">{{ formatDate(expense.date) }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(expense.status)">
+              <span class="status-icon">{{ getStatusIcon(expense.status) }}</span>
+              {{ getStatusLabel(expense.status) }}
+            </span>
+          </td>
+          <td class="date-text">{{ formatDate(expense.submitted_at) }}</td>
+          <td class="actions-cell">
+            <div class="action-buttons">
+              <!-- View details -->
+              <button class="btn-view" (click)="openModal(expense)">Details</button>
+              <!-- Receipt link -->
+              <a
+                *ngIf="expense.receipt_filename"
+                [href]="getReceiptUrl(expense)"
+                target="_blank"
+                class="btn-receipt"
+              >Receipt</a>
+              <!-- Cancel (pending only) -->
+              <button
+                *ngIf="expense.status === 'submitted'"
+                class="btn-cancel"
+                (click)="cancelExpense(expense)"
+                [disabled]="cancellingId === expense.id"
+              >
+                {{ cancellingId === expense.id ? 'Cancelling...' : 'Cancel' }}
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Expense Details</h3>
+        <button class="btn-close" (click)="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedExpense">
+
+        <!-- Basic details -->
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">Category</span>
+            <span class="detail-value">{{ formatCategory(selectedExpense.category) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Amount</span>
+            <span class="detail-value amount-highlight">{{ formatCurrency(selectedExpense.amount) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Vendor</span>
+            <span class="detail-value">{{ selectedExpense.vendor || '—' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Date</span>
+            <span class="detail-value">{{ formatDate(selectedExpense.date) }}</span>
+          </div>
+          <div class="detail-item" *ngIf="selectedExpense.description">
+            <span class="detail-label">Description</span>
+            <span class="detail-value">{{ selectedExpense.description }}</span>
+          </div>
+          <div class="detail-item" *ngIf="selectedExpense.rejection_reason">
+            <span class="detail-label">Rejection Reason</span>
+            <span class="detail-value rejection-text">{{ selectedExpense.rejection_reason }}</span>
+          </div>
+        </div>
+
+        <!-- OCR result -->
+        <div class="modal-section" *ngIf="selectedExpense.ocr_extracted">
+          <h4 class="section-title">Receipt Analysis</h4>
+          <app-ocr-result-display
+            [ocrResult]="selectedExpense.ocr_extracted"
+            [submitted]="getSubmittedData(selectedExpense)"
+            [receiptUrl]="getReceiptUrl(selectedExpense)"
+          ></app-ocr-result-display>
+        </div>
+
+        <!-- LLM reasoning -->
+        <div class="modal-section" *ngIf="selectedExpense.llm_reasoning && selectedExpense.llm_decision">
+          <h4 class="section-title">Agent Decision</h4>
+          <app-llm-reasoning-display
+            [decision]="getDecision(selectedExpense.llm_decision)"
+            [reasoning]="selectedExpense.llm_reasoning"
+            [confidence]="0.85"
+            [factors]="[]"
+            [recommendations]="[]"
+          ></app-llm-reasoning-display>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>

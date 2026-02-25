@@ -1,0 +1,175 @@
+<div class="approvals-container">
+  <div class="header">
+    <h2 class="title">Pending Expense Approvals</h2>
+    <p class="subtitle">Review and approve expense claims from your team</p>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner">Loading expense approvals...</div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-banner" *ngIf="error">
+    <span class="error-icon">⚠</span>
+    <span>{{ error }}</span>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!isLoading && !error && expenses.length === 0">
+    <span class="empty-icon">✓</span>
+    <p class="empty-text">No pending approvals</p>
+    <p class="empty-sub">All expense claims have been reviewed</p>
+  </div>
+
+  <!-- Expense Cards -->
+  <div class="approvals-grid" *ngIf="!isLoading && expenses.length > 0">
+    <div class="approval-card" *ngFor="let expense of expenses">
+
+      <!-- Card header -->
+      <div class="card-header">
+        <div class="employee-info">
+          <h3 class="employee-name">{{ expense.employee_name || 'Employee' }}</h3>
+          <span class="expense-id">#{{ expense.id }}</span>
+        </div>
+        <div class="header-badges">
+          <!-- LLM decision badge -->
+          <span class="llm-badge" [ngClass]="getLlmBadgeClass(expense.llm_decision)" *ngIf="expense.llm_decision">
+            {{ getLlmBadgeLabel(expense.llm_decision) }}
+          </span>
+          <!-- Low OCR confidence warning -->
+          <span class="ocr-warning" *ngIf="isLowConfidence(expense)">
+            ⚠ Manual receipt review required
+          </span>
+        </div>
+      </div>
+
+      <!-- Expense details -->
+      <div class="expense-details">
+        <div class="detail-row">
+          <span class="detail-label">Category</span>
+          <span class="category-badge">{{ formatCategory(expense.category) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Amount</span>
+          <span class="amount-value">{{ formatCurrency(expense.amount) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Vendor</span>
+          <span class="detail-value">{{ expense.vendor || '—' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Date</span>
+          <span class="detail-value">{{ formatDate(expense.date) }}</span>
+        </div>
+        <div class="detail-row" *ngIf="expense.description">
+          <span class="detail-label">Description</span>
+          <span class="detail-value">{{ expense.description }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Submitted</span>
+          <span class="detail-value">{{ formatDate(expense.submitted_at) }}</span>
+        </div>
+      </div>
+
+      <!-- Receipt link -->
+      <div class="receipt-row" *ngIf="expense.receipt_filename">
+        <a [href]="getReceiptUrl(expense)" target="_blank" class="receipt-link">
+          View receipt image
+        </a>
+      </div>
+
+      <!-- OCR comparison -->
+      <div class="ocr-section" *ngIf="expense.ocr_extracted">
+        <h4 class="section-label">Receipt Analysis</h4>
+        <app-ocr-result-display
+          [ocrResult]="expense.ocr_extracted"
+          [submitted]="getSubmittedData(expense)"
+          [receiptUrl]="getReceiptUrl(expense)"
+        ></app-ocr-result-display>
+      </div>
+
+      <!-- LLM reasoning -->
+      <div class="llm-section" *ngIf="expense.llm_decision && expense.llm_reasoning">
+        <h4 class="section-label">Agent Reasoning</h4>
+        <app-llm-reasoning-display
+          [decision]="getDecision(expense.llm_decision)"
+          [reasoning]="expense.llm_reasoning"
+          [confidence]="expense.ocr_extracted?.overall_confidence || 0.85"
+          [factors]="[]"
+          [recommendations]="[]"
+        ></app-llm-reasoning-display>
+      </div>
+
+      <!-- Optional comments -->
+      <div class="comments-section">
+        <label [for]="'comments-' + expense.id" class="comments-label">Comments (optional)</label>
+        <textarea
+          [id]="'comments-' + expense.id"
+          [(ngModel)]="approvalComments[expense.id]"
+          class="comments-input"
+          rows="2"
+          placeholder="Add approval comments..."
+        ></textarea>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="action-buttons">
+        <button
+          class="btn-reject"
+          (click)="openRejectModal(expense)"
+          [disabled]="actioningId === expense.id"
+        >
+          <span class="btn-icon">✗</span> Reject
+        </button>
+        <button
+          class="btn-approve"
+          (click)="approveExpense(expense)"
+          [disabled]="actioningId === expense.id"
+        >
+          <span *ngIf="actioningId !== expense.id"><span class="btn-icon">✓</span> Approve</span>
+          <span *ngIf="actioningId === expense.id">Approving...</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Reject modal -->
+  <div class="modal-overlay" *ngIf="showRejectModal" (click)="closeRejectModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Reject Expense Claim</h3>
+        <button class="btn-close" (click)="closeRejectModal()">✕</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedExpense">
+        <p class="modal-text">
+          You are rejecting <strong>{{ selectedExpense.employee_name || 'Employee' }}'s</strong>
+          <strong>{{ formatCategory(selectedExpense.category) }}</strong> claim for
+          <strong>{{ formatCurrency(selectedExpense.amount) }}</strong>.
+        </p>
+        <div class="form-group">
+          <label class="form-label">Rejection Reason <span class="required">*</span></label>
+          <textarea
+            [(ngModel)]="rejectionReason"
+            class="rejection-textarea"
+            rows="4"
+            placeholder="Please provide a clear reason for rejection..."
+            autofocus
+          ></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeRejectModal()">Cancel</button>
+        <button
+          class="btn-confirm-reject"
+          (click)="confirmReject()"
+          [disabled]="!rejectionReason.trim() || !!actioningId"
+        >
+          {{ actioningId ? 'Rejecting...' : 'Confirm Rejection' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

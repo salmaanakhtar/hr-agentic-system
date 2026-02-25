@@ -1,0 +1,176 @@
+<div class="form-container">
+  <div class="header">
+    <h2 class="title">Submit Expense</h2>
+    <p class="subtitle">Upload a receipt and the AI agent will validate your claim</p>
+  </div>
+
+  <!-- Submission Result -->
+  <div class="result-panel" *ngIf="result">
+    <!-- Decision banner -->
+    <div class="decision-banner"
+         [ngClass]="{
+           'decision-approve': result.decision === 'AUTO_APPROVE',
+           'decision-escalate': result.decision === 'ESCALATE',
+           'decision-reject': result.decision === 'REJECT'
+         }">
+      <span class="decision-icon">
+        {{ result.decision === 'AUTO_APPROVE' ? '✓' : (result.decision === 'ESCALATE' ? '↑' : '✗') }}
+      </span>
+      <div class="decision-text">
+        <strong>
+          {{ result.decision === 'AUTO_APPROVE' ? 'Expense Auto-Approved' :
+             result.decision === 'ESCALATE' ? 'Sent for Manager Review' :
+             'Expense Rejected' }}
+        </strong>
+        <span>{{ result.message }}</span>
+      </div>
+      <button class="btn-history" (click)="goToHistory()">View History</button>
+    </div>
+
+    <!-- OCR result (if receipt was processed) -->
+    <div class="result-section" *ngIf="result.ocr_result">
+      <h3 class="section-label">Receipt Analysis</h3>
+      <div class="ocr-card">
+        <app-ocr-result-display
+          [ocrResult]="result.ocr_result"
+          [submitted]="submittedData"
+          [receiptUrl]="receiptUrl"
+        ></app-ocr-result-display>
+      </div>
+    </div>
+
+    <!-- LLM reasoning -->
+    <div class="result-section">
+      <h3 class="section-label">Agent Reasoning</h3>
+      <app-llm-reasoning-display
+        [decision]="getDecision(result.decision)"
+        [reasoning]="result.reasoning"
+        [confidence]="result.confidence"
+        [factors]="result.factors"
+        [recommendations]="result.recommendations"
+      ></app-llm-reasoning-display>
+    </div>
+
+    <!-- Submit another -->
+    <button class="btn-new" (click)="result = null; form.reset(); removeFile()">
+      Submit Another Expense
+    </button>
+  </div>
+
+  <!-- Expense Form -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" *ngIf="!result">
+
+    <!-- Error banner -->
+    <div class="error-banner" *ngIf="error">
+      <span class="error-icon">⚠</span>
+      <span>{{ error }}</span>
+    </div>
+
+    <div class="form-card">
+
+      <!-- Category + Amount row -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category <span class="required">*</span></label>
+          <select formControlName="category" class="form-select"
+                  [ngClass]="{'invalid': isFieldInvalid('category')}">
+            <option value="" disabled>Select category</option>
+            <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.label }}</option>
+          </select>
+          <span class="field-error" *ngIf="isFieldInvalid('category')">Category is required</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Amount ($) <span class="required">*</span></label>
+          <input
+            type="number"
+            formControlName="amount"
+            class="form-input"
+            [ngClass]="{'invalid': isFieldInvalid('amount')}"
+            placeholder="0.00"
+            step="0.01"
+            min="0.01"
+          />
+          <span class="field-error" *ngIf="isFieldInvalid('amount')">Enter a valid amount</span>
+        </div>
+      </div>
+
+      <!-- Vendor + Date row -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Vendor / Merchant</label>
+          <input
+            type="text"
+            formControlName="vendor"
+            class="form-input"
+            placeholder="e.g. Starbucks"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Date <span class="required">*</span></label>
+          <input
+            type="date"
+            formControlName="date"
+            class="form-input"
+            [ngClass]="{'invalid': isFieldInvalid('date')}"
+            [max]="maxDate"
+          />
+          <span class="field-error" *ngIf="isFieldInvalid('date')">Date is required</span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea
+          formControlName="description"
+          class="form-textarea"
+          rows="2"
+          placeholder="Brief description of the expense..."
+        ></textarea>
+      </div>
+
+      <!-- File upload zone -->
+      <div class="form-group">
+        <label class="form-label">Receipt (optional)</label>
+        <div
+          class="upload-zone"
+          [ngClass]="{'dragging': isDragging, 'has-file': selectedFile}"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave()"
+          (drop)="onDrop($event)"
+        >
+          <!-- No file selected -->
+          <div class="upload-prompt" *ngIf="!selectedFile">
+            <span class="upload-icon">↑</span>
+            <span class="upload-text">Drag & drop or <label class="upload-link">
+              browse<input type="file" accept=".jpg,.jpeg,.png,.pdf" (change)="onFileSelected($event)" hidden />
+            </label></span>
+            <span class="upload-hint">JPG, PNG or PDF — max 5MB</span>
+          </div>
+
+          <!-- File selected -->
+          <div class="file-preview" *ngIf="selectedFile">
+            <img *ngIf="previewUrl" [src]="previewUrl" alt="Receipt preview" class="file-thumb" />
+            <span *ngIf="!previewUrl" class="file-pdf-icon">PDF</span>
+            <div class="file-info">
+              <span class="file-name">{{ selectedFile.name }}</span>
+              <span class="file-size">{{ (selectedFile.size / 1024).toFixed(1) }} KB</span>
+            </div>
+            <button type="button" class="btn-remove-file" (click)="removeFile()">✕</button>
+          </div>
+        </div>
+        <span class="field-error" *ngIf="fileError">{{ fileError }}</span>
+      </div>
+
+    </div>
+
+    <!-- Submit button -->
+    <button type="submit" class="btn-submit" [disabled]="isSubmitting">
+      <span *ngIf="!isSubmitting">Submit Expense</span>
+      <span *ngIf="isSubmitting" class="loading-text">Processing receipt...</span>
+    </button>
+
+  </form>
+</div>

@@ -1,0 +1,221 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.ocr-display {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.low-confidence-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: 0.75rem;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: $warning;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.banner-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.ocr-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.receipt-preview {
+  a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    text-decoration: none;
+  }
+}
+
+.receipt-thumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  border: 2px solid rgba(99, 102, 241, 0.3);
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: $primary;
+  }
+}
+
+.preview-label {
+  font-size: 0.75rem;
+  color: $primary;
+  font-weight: 500;
+}
+
+.confidence-summary {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 200px;
+}
+
+.confidence-label {
+  @include text-secondary;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.confidence-bar-wrap {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+
+  [data-theme='light'] & { background: rgba(0, 0, 0, 0.08); }
+  [data-theme='dark'] & { background: rgba(255, 255, 255, 0.08); }
+}
+
+.confidence-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+
+  &.confidence-high  { background: $success; }
+  &.confidence-medium { background: $warning; }
+  &.confidence-low   { background: $error; }
+}
+
+.confidence-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &.confidence-high  { color: $success; }
+  &.confidence-medium { color: $warning; }
+  &.confidence-low   { color: $error; }
+}
+
+// Comparison grid: 4 columns
+.comparison-grid {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr 120px;
+  gap: 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid;
+
+  [data-theme='light'] & { border-color: rgba(0, 0, 0, 0.08); }
+  [data-theme='dark'] & { border-color: rgba(255, 255, 255, 0.08); }
+}
+
+.col-header {
+  @include text-secondary;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.625rem 0.875rem;
+  border-bottom: 1px solid;
+
+  [data-theme='light'] & {
+    background: rgba(0, 0, 0, 0.03);
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+  }
+
+  [data-theme='dark'] & {
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.row-label {
+  @include text-primary;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.75rem 0.875rem;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid;
+
+  [data-theme='light'] & { border-bottom-color: rgba(0, 0, 0, 0.05); }
+  [data-theme='dark'] & { border-bottom-color: rgba(255, 255, 255, 0.05); }
+
+  &:last-of-type { border-bottom: none; }
+}
+
+.row-value {
+  @include text-secondary;
+  font-size: 0.9rem;
+  padding: 0.75rem 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-bottom: 1px solid;
+
+  [data-theme='light'] & { border-bottom-color: rgba(0, 0, 0, 0.05); }
+  [data-theme='dark'] & { border-bottom-color: rgba(255, 255, 255, 0.05); }
+
+  &.match {
+    color: $success;
+    font-weight: 500;
+  }
+
+  &.mismatch {
+    color: $error;
+    font-weight: 500;
+  }
+}
+
+.match-icon {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.row-confidence {
+  padding: 0.75rem 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-bottom: 1px solid;
+
+  [data-theme='light'] & { border-bottom-color: rgba(0, 0, 0, 0.05); }
+  [data-theme='dark'] & { border-bottom-color: rgba(255, 255, 255, 0.05); }
+}
+
+.mini-bar-wrap {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+
+  [data-theme='light'] & { background: rgba(0, 0, 0, 0.08); }
+  [data-theme='dark'] & { background: rgba(255, 255, 255, 0.08); }
+}
+
+.mini-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+
+  &.confidence-high  { background: $success; }
+  &.confidence-medium { background: $warning; }
+  &.confidence-low   { background: $error; }
+}
+
+.mini-value {
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 30px;
+  @include text-secondary;
+}

@@ -7,6 +7,9 @@ import { LeaveHistoryComponent } from './leave/leave-history/leave-history.compo
 import { LeaveBalanceCardComponent } from './leave/leave-balance-card/leave-balance-card.component';
 import { PendingApprovalsComponent } from './leave/pending-approvals/pending-approvals.component';
 import { TeamCalendarComponent } from './leave/team-calendar/team-calendar.component';
+import { ExpenseRequestFormComponent } from './expenses/expense-request-form/expense-request-form.component';
+import { ExpenseHistoryComponent } from './expenses/expense-history/expense-history.component';
+import { PendingExpenseApprovalsComponent } from './expenses/pending-expense-approvals/pending-expense-approvals.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -20,6 +23,11 @@ export const routes: Routes = [
   { path: 'leave/balance', component: LeaveBalanceCardComponent },
   { path: 'leave/approvals', component: PendingApprovalsComponent },
   { path: 'leave/calendar', component: TeamCalendarComponent },
+
+  // Expense Management Routes
+  { path: 'expenses/submit', component: ExpenseRequestFormComponent },
+  { path: 'expenses/history', component: ExpenseHistoryComponent },
+  { path: 'expenses/approvals', component: PendingExpenseApprovalsComponent },
 
   { path: '**', redirectTo: '/login' }
 ];

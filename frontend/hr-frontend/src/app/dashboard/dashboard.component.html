@@ -16,16 +16,34 @@
       <p><strong>Role:</strong> {{ user.role }}</p>
     </div>
 
-    <div class="features">
-      <h3>Available Features</h3>
-      <ul>
-        <li *ngIf="user.role === 'admin' || user.role === 'hr'">Employee Management</li>
-        <li *ngIf="user.role === 'admin' || user.role === 'hr' || user.role === 'manager'">Team Oversight</li>
-        <li>Personal Profile</li>
-        <li>Document Access</li>
-        <li *ngIf="user.role === 'admin'">System Administration</li>
+    <!-- Leave Management -->
+    <div class="nav-section">
+      <h3>Leave Management</h3>
+      <ul class="nav-links">
+        <li><a routerLink="/leave/request">Submit Leave Request</a></li>
+        <li><a routerLink="/leave/history">Leave History</a></li>
+        <li><a routerLink="/leave/balance">Leave Balance</a></li>
+        <li *ngIf="user.role === 'manager' || user.role === 'hr' || user.role === 'admin'">
+          <a routerLink="/leave/approvals">Pending Leave Approvals</a>
+        </li>
+        <li *ngIf="user.role === 'manager' || user.role === 'hr' || user.role === 'admin'">
+          <a routerLink="/leave/calendar">Team Calendar</a>
+        </li>
       </ul>
     </div>
+
+    <!-- Expense Management -->
+    <div class="nav-section">
+      <h3>Expense Management</h3>
+      <ul class="nav-links">
+        <li><a routerLink="/expenses/submit">Submit Expense Claim</a></li>
+        <li><a routerLink="/expenses/history">Expense History</a></li>
+        <li *ngIf="user.role === 'manager' || user.role === 'hr' || user.role === 'admin'">
+          <a routerLink="/expenses/approvals">Pending Expense Approvals</a>
+        </li>
+      </ul>
+    </div>
+
   </div>
 
   <div *ngIf="!user" class="loading">
