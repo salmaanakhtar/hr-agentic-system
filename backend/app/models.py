@@ -4,6 +4,7 @@ from .database import Base
 from datetime import datetime
 from typing import Dict, Any
 from enum import Enum
+from pgvector.sqlalchemy import Vector
 
 class Role(Base):
     __tablename__ = "roles"
@@ -277,3 +278,110 @@ class WorkflowState(Base):
             "ttl_hours": self.ttl_hours,
             "cleanup_scheduled": self.cleanup_scheduled
         }
+
+
+# ---------------------------------------------------------------------------
+# Hiring
+# ---------------------------------------------------------------------------
+
+class JobStatus(str, Enum):
+    DRAFT = "draft"
+    OPEN = "open"
+    CLOSED = "closed"
+    ON_HOLD = "on_hold"
+
+
+class ApplicationStatus(str, Enum):
+    APPLIED = "applied"
+    SHORTLISTED = "shortlisted"
+    INTERVIEWING = "interviewing"
+    OFFERED = "offered"
+    REJECTED = "rejected"
+    PASSED = "passed"
+
+
+class HiringDecision(str, Enum):
+    SHORTLIST = "SHORTLIST"
+    REVIEW = "REVIEW"
+    PASS = "PASS"
+
+
+class JobPosting(Base):
+    __tablename__ = "job_postings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False, index=True)
+    department = Column(String, nullable=False, index=True)
+    description = Column(Text, nullable=False)
+    requirements = Column(Text, nullable=False)       # plain text list of required skills/experience
+    required_skills = Column(JSON, default=list)      # structured list for matching
+    experience_years = Column(Integer, default=0)
+    employment_type = Column(String, default="full_time")  # full_time, part_time, contract
+    location = Column(String, nullable=True)
+    salary_min = Column(Float, nullable=True)
+    salary_max = Column(Float, nullable=True)
+    status = Column(String, default=JobStatus.OPEN.value, index=True)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    embedding = Column(Vector(1536), nullable=True)   # text-embedding-3-small of title+description+requirements
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    creator = relationship("User", foreign_keys=[created_by])
+    applications = relationship("JobApplication", back_populates="job", cascade="all, delete-orphan")
+
+
+class Candidate(Base):
+    __tablename__ = "candidates"
+
+    id = Column(Integer, primary_key=True, index=True)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    phone = Column(String, nullable=True)
+    cv_filename = Column(String, nullable=True)
+    cv_path = Column(String, nullable=True)
+    cv_text = Column(Text, nullable=True)             # full extracted text from CV
+    cv_embedding = Column(Vector(1536), nullable=True) # text-embedding-3-small of full CV text
+    skills = Column(JSON, default=list)               # extracted skills list
+    experience_years = Column(Integer, nullable=True)
+    education = Column(JSON, default=list)            # extracted education entries
+    current_title = Column(String, nullable=True)
+    linkedin_url = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    applications = relationship("JobApplication", back_populates="candidate", cascade="all, delete-orphan")
+
+    @property
+    def cv_url(self) -> str:
+        if self.cv_filename:
+            return f"/uploads/cvs/{self.cv_filename}"
+        return None
+
+    @property
+    def full_name(self) -> str:
+        return f"{self.first_name} {self.last_name}"
+
+
+class JobApplication(Base):
+    __tablename__ = "job_applications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    job_id = Column(Integer, ForeignKey("job_postings.id"), nullable=False, index=True)
+    candidate_id = Column(Integer, ForeignKey("candidates.id"), nullable=False, index=True)
+    status = Column(String, default=ApplicationStatus.APPLIED.value, index=True)
+    similarity_score = Column(Float, nullable=True)   # cosine similarity 0.0-1.0
+    skill_coverage = Column(Float, nullable=True)     # fraction of required skills matched
+    rank = Column(Integer, nullable=True)             # rank among all applicants for this job (1 = best)
+    llm_decision = Column(String, nullable=True)      # SHORTLIST, REVIEW, PASS
+    llm_reasoning = Column(Text, nullable=True)
+    interview_date = Column(DateTime, nullable=True)
+    interview_notes = Column(Text, nullable=True)
+    reviewed_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    reviewed_at = Column(DateTime, nullable=True)
+    applied_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    job = relationship("JobPosting", back_populates="applications")
+    candidate = relationship("Candidate", back_populates="applications")
+    reviewer = relationship("User", foreign_keys=[reviewed_by])

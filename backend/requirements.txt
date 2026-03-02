@@ -17,3 +17,5 @@ easyocr
 Pillow
 python-multipart
 aiofiles
+pgvector>=0.2.4
+pypdf>=4.0.0
