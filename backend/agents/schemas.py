@@ -180,3 +180,12 @@ class CandidateRankingOutput(BaseModel):
     candidates: List[Dict[str, Any]] = Field(default_factory=list)
     top_candidate: Optional[Dict[str, Any]] = None
     ranking_criteria: List[str] = Field(default_factory=list)
+
+
+class CVParseResult(BaseModel):
+    raw_text: str = ""
+    skills: List[str] = Field(default_factory=list)
+    experience_years: Optional[int] = None
+    education: List[Dict[str, Any]] = Field(default_factory=list)
+    current_title: Optional[str] = None
+    parse_confidence: float = 0.0   # 0.0-1.0, fraction of structured fields extracted
