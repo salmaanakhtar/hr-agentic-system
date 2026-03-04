@@ -109,15 +109,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve uploaded receipt images (authenticated routes handle access control)
+# Serve uploaded files (receipts, CVs) — authenticated routes handle access control
 _uploads_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
 os.makedirs(os.path.join(_uploads_dir, "receipts"), exist_ok=True)
+os.makedirs(os.path.join(_uploads_dir, "cvs"), exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=_uploads_dir), name="uploads")
 
 # Include routers
-from app.routers import leave, expenses
+from app.routers import leave, expenses, hiring
 app.include_router(leave.router)
 app.include_router(expenses.router)
+app.include_router(hiring.router)
 
 @app.on_event("startup")
 def startup_event():

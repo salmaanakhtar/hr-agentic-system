@@ -209,3 +209,49 @@ class CVParseResult(BaseModel):
     education: List[Dict[str, Any]] = Field(default_factory=list)
     current_title: Optional[str] = None
     parse_confidence: float = 0.0   # 0.0-1.0, fraction of structured fields extracted
+
+
+# ---------------------------------------------------------------------------
+# Hiring API Request/Response Schemas (Phase 5.4)
+# ---------------------------------------------------------------------------
+
+class JobPostingCreate(BaseModel):
+    title: str
+    department: str
+    description: str
+    requirements: str
+    required_skills: List[str] = Field(default_factory=list)
+    experience_years: int = 0
+    employment_type: str = "full_time"
+    location: Optional[str] = None
+    salary_min: Optional[float] = None
+    salary_max: Optional[float] = None
+
+
+class JobPostingUpdate(BaseModel):
+    title: Optional[str] = None
+    department: Optional[str] = None
+    description: Optional[str] = None
+    requirements: Optional[str] = None
+    required_skills: Optional[List[str]] = None
+    experience_years: Optional[int] = None
+    employment_type: Optional[str] = None
+    location: Optional[str] = None
+    salary_min: Optional[float] = None
+    salary_max: Optional[float] = None
+    status: Optional[str] = None
+
+
+class ApplicationCreate(BaseModel):
+    job_id: int
+    candidate_id: int
+
+
+class ApplicationStatusUpdate(BaseModel):
+    status: str
+    notes: Optional[str] = None
+
+
+class InterviewScheduleCreate(BaseModel):
+    interview_date: str   # ISO 8601 datetime string
+    interview_notes: Optional[str] = None
