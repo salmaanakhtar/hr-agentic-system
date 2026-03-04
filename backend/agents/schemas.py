@@ -173,6 +173,26 @@ class ExpenseApprovalOutput(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
 
 
+class HiringApplicationInput(BaseModel):
+    application_id: int
+    job_id: int
+    candidate_id: int
+    submitted_by: int  # user_id of the HR/manager who triggered evaluation
+
+
+class HiringApplicationOutput(BaseModel):
+    success: bool
+    message: str
+    reasoning: str
+    decision: str   # SHORTLIST, REVIEW, PASS
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    application_id: int
+    similarity_score: Optional[float] = None
+    skill_coverage: Optional[float] = None
+    factors: List[str] = Field(default_factory=list)
+    recommendations: List[str] = Field(default_factory=list)
+
+
 class CandidateRankingOutput(BaseModel):
     success: bool
     message: str
