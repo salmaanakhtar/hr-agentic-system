@@ -1,0 +1,104 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">Schedule Interview</h1>
+    <button class="back-link" (click)="goToPipeline()">Back to Pipeline</button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner">Loading application...</div>
+  </div>
+
+  <!-- Success State -->
+  <div class="result-card" *ngIf="success">
+    <div class="result-header success">
+      <span class="result-icon">✓</span>
+      <div>
+        <h2 class="result-title">Interview Scheduled</h2>
+        <p class="result-sub">{{ formatDate(scheduledDate) }}</p>
+      </div>
+    </div>
+    <div class="result-details" *ngIf="application">
+      <div class="detail-row">
+        <span class="detail-label">Candidate</span>
+        <span class="detail-value">{{ application.candidate?.full_name }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Position</span>
+        <span class="detail-value">{{ application.job?.title }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Notes</span>
+        <span class="detail-value">{{ form.value.interview_notes || '—' }}</span>
+      </div>
+    </div>
+    <div class="result-actions">
+      <button class="btn-primary" (click)="goToPipeline()">Back to Pipeline</button>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <ng-container *ngIf="!isLoading && !success">
+    <!-- Application Context -->
+    <div class="context-panel" *ngIf="application">
+      <div class="context-item">
+        <span class="context-label">Candidate</span>
+        <span class="context-value">{{ application.candidate?.full_name }}</span>
+      </div>
+      <div class="context-item">
+        <span class="context-label">Email</span>
+        <span class="context-value">{{ application.candidate?.email }}</span>
+      </div>
+      <div class="context-item">
+        <span class="context-label">Position</span>
+        <span class="context-value">{{ application.job?.title }}</span>
+      </div>
+      <div class="context-item">
+        <span class="context-label">AI Decision</span>
+        <span class="context-value decision-value" [ngClass]="{
+          'decision-shortlist': application.llm_decision === 'SHORTLIST',
+          'decision-review': application.llm_decision === 'REVIEW',
+          'decision-pass': application.llm_decision === 'PASS'
+        }">
+          {{ application.llm_decision ?? 'Pending' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="error-banner" *ngIf="error">
+      <span>!</span><span>{{ error }}</span>
+    </div>
+
+    <!-- Schedule Form -->
+    <div class="form-card" *ngIf="application">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label class="form-label">Interview Date & Time *</label>
+          <input class="form-input" [class.invalid]="isFieldInvalid('interview_date')"
+            type="datetime-local" formControlName="interview_date" />
+          <span class="field-error" *ngIf="isFieldInvalid('interview_date')">
+            Interview date and time is required
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Interview Notes</label>
+          <textarea class="form-input" formControlName="interview_notes" rows="4"
+            placeholder="e.g. Technical interview via Zoom, focus on system design..."></textarea>
+        </div>
+
+        <p class="info-hint">
+          Scheduling an interview will automatically update the application status to "Interviewing".
+        </p>
+
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="goToPipeline()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Scheduling...' : 'Schedule Interview' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,237 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.page-container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: $spacing-xl;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-xl;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  @include text-primary;
+}
+
+.back-link {
+  font-size: 0.875rem;
+  color: $primary;
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+}
+
+.form-card {
+  @include glass-card;
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-lg;
+  background: rgba($error, 0.1);
+  border: 1px solid rgba($error, 0.3);
+  color: $error;
+  font-size: 0.875rem;
+
+  .error-icon {
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+}
+
+.form-section {
+  margin-bottom: $spacing-xl;
+  padding-bottom: $spacing-xl;
+  border-bottom: 1px solid;
+
+  [data-theme='light'] & { border-color: rgba($light-text-primary, 0.08); }
+  [data-theme='dark'] & { border-color: rgba($dark-text-primary, 0.08); }
+
+  &:last-of-type { border-bottom: none; padding-bottom: 0; }
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  @include text-primary;
+  margin-bottom: $spacing-lg;
+}
+
+.section-hint {
+  font-size: 0.8rem;
+  @include text-secondary;
+  margin-bottom: $spacing-md;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-lg;
+  margin-bottom: $spacing-md;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: $spacing-md;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  @include text-secondary;
+}
+
+.form-input {
+  @include glass-input;
+  width: 100%;
+  box-sizing: border-box;
+
+  &.invalid {
+    border-color: rgba($error, 0.5) !important;
+  }
+
+  &[rows] {
+    resize: vertical;
+    min-height: 100px;
+  }
+}
+
+.field-error {
+  font-size: 0.75rem;
+  color: $error;
+}
+
+.salary-row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+
+  .form-input { flex: 1; }
+
+  .salary-sep {
+    @include text-secondary;
+    flex-shrink: 0;
+    font-size: 1rem;
+  }
+}
+
+.skill-input-row {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+
+  .skill-input { flex: 1; }
+}
+
+.btn-add-skill {
+  padding: 0 $spacing-lg;
+  border-radius: $radius-md;
+  border: 1px solid rgba($primary, 0.4);
+  background: rgba($primary, 0.08);
+  color: $primary;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba($primary, 0.15);
+  }
+}
+
+.skills-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: $radius-full;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: rgba($primary, 0.1);
+  border: 1px solid rgba($primary, 0.3);
+  color: $primary;
+
+  .chip-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $primary;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+
+    &:hover { opacity: 1; }
+  }
+}
+
+.no-skills-hint {
+  font-size: 0.8rem;
+  @include text-secondary;
+  font-style: italic;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-md;
+  margin-top: $spacing-xl;
+}
+
+.btn-primary {
+  @include primary-button;
+  padding: $spacing-md $spacing-xl;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.btn-secondary {
+  padding: $spacing-md $spacing-xl;
+  border-radius: $radius-md;
+  border: 1px solid;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+
+  [data-theme='light'] & {
+    border-color: rgba($light-text-primary, 0.2);
+    color: $light-text-secondary;
+    &:hover { background: rgba($light-text-primary, 0.05); }
+  }
+  [data-theme='dark'] & {
+    border-color: rgba($dark-text-primary, 0.2);
+    color: $dark-text-secondary;
+    &:hover { background: rgba($dark-text-primary, 0.05); }
+  }
+}

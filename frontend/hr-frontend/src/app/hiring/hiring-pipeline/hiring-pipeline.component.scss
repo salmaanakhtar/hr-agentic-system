@@ -1,0 +1,484 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.page-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: $spacing-xl;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: $spacing-xl;
+  gap: $spacing-md;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  @include text-primary;
+}
+
+.page-sub {
+  font-size: 0.875rem;
+  @include text-secondary;
+  margin-top: 0.25rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  flex-shrink: 0;
+}
+
+.back-link {
+  font-size: 0.875rem;
+  color: $primary;
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+}
+
+// Job Summary Panel
+.job-summary-panel {
+  @include glass-panel;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xl;
+  margin-bottom: $spacing-xl;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.summary-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  @include text-secondary;
+}
+
+.summary-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  @include text-primary;
+
+  &.status-text.open { color: $success; }
+}
+
+// States
+.loading-container, .empty-state {
+  text-align: center;
+  padding: $spacing-xl * 2;
+}
+
+.loading-spinner {
+  @include text-secondary;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.empty-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  @include text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.empty-sub {
+  font-size: 0.875rem;
+  @include text-secondary;
+  margin-bottom: $spacing-lg;
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  background: rgba($error, 0.1);
+  border: 1px solid rgba($error, 0.3);
+  color: $error;
+  font-size: 0.875rem;
+  margin-bottom: $spacing-lg;
+}
+
+.btn-primary {
+  @include primary-button;
+  padding: $spacing-sm $spacing-lg;
+  text-decoration: none;
+  display: inline-block;
+  &:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+}
+
+// Applications List
+.applications-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+}
+
+.app-card {
+  @include glass-card;
+}
+
+.app-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+  gap: $spacing-md;
+}
+
+.candidate-info {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: rgba($primary, 0.1);
+  border: 2px solid rgba($primary, 0.25);
+  color: $primary;
+}
+
+.candidate-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  @include text-primary;
+  margin-bottom: 0.125rem;
+}
+
+.candidate-link {
+  color: inherit;
+  text-decoration: none;
+  &:hover { color: $primary; text-decoration: underline; }
+}
+
+.candidate-email {
+  font-size: 0.8rem;
+  @include text-secondary;
+}
+
+.app-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.rank-badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: $radius-full;
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba($primary, 0.12);
+  border: 1px solid rgba($primary, 0.3);
+  color: $primary;
+}
+
+.decision-badge {
+  padding: 0.2rem 0.7rem;
+  border-radius: $radius-full;
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  &.decision-shortlist { background: rgba($success, 0.1); border: 1px solid rgba($success, 0.3); color: $success; }
+  &.decision-review    { background: rgba($warning, 0.1); border: 1px solid rgba($warning, 0.3); color: $warning; }
+  &.decision-pass      { background: rgba($error, 0.08); border: 1px solid rgba($error, 0.25); color: $error; }
+}
+
+.status-badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: $radius-full;
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  &.status-applied     { background: rgba(107, 114, 128, 0.1); border: 1px solid rgba(107, 114, 128, 0.3); color: #6b7280; }
+  &.status-shortlisted { background: rgba($success, 0.1); border: 1px solid rgba($success, 0.3); color: $success; }
+  &.status-interviewing { background: rgba($primary, 0.1); border: 1px solid rgba($primary, 0.3); color: $primary; }
+  &.status-offered     { background: rgba($warning, 0.1); border: 1px solid rgba($warning, 0.3); color: $warning; }
+  &.status-rejected    { background: rgba($error, 0.1); border: 1px solid rgba($error, 0.3); color: $error; }
+  &.status-passed      { background: rgba(107, 114, 128, 0.1); border: 1px solid rgba(107, 114, 128, 0.3); color: #6b7280; }
+}
+
+// Score Bars
+.scores-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin-bottom: $spacing-md;
+}
+
+.score-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.score-label {
+  font-size: 0.75rem;
+  @include text-secondary;
+  min-width: 110px;
+}
+
+.score-bar-wrapper {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(107, 114, 128, 0.15);
+  overflow: hidden;
+}
+
+.score-bar {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, $success, lighten($success, 10%));
+  transition: width 0.4s ease;
+  max-width: 100%;
+
+  &.score-bar-skill {
+    background: linear-gradient(90deg, $primary, lighten($primary, 10%));
+  }
+}
+
+.score-value {
+  font-size: 0.8rem;
+  font-weight: 600;
+  @include text-primary;
+  min-width: 36px;
+  text-align: right;
+}
+
+// Interview info
+.interview-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: $spacing-sm;
+  font-size: 0.85rem;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  background: rgba($primary, 0.06);
+  border: 1px solid rgba($primary, 0.15);
+}
+
+.interview-label {
+  font-weight: 600;
+  color: $primary;
+}
+
+.interview-date {
+  font-weight: 500;
+  @include text-primary;
+}
+
+.interview-notes {
+  @include text-secondary;
+  font-size: 0.8rem;
+}
+
+// Reasoning
+.reasoning-toggle {
+  margin-bottom: $spacing-sm;
+}
+
+.btn-toggle-reasoning {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8rem;
+  color: $primary;
+  cursor: pointer;
+  text-decoration: underline;
+  &:hover { opacity: 0.8; }
+}
+
+.reasoning-container {
+  margin-bottom: $spacing-md;
+  animation: fadeIn 0.25s ease;
+}
+
+// Card Actions
+.app-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: $spacing-md;
+  border-top: 1px solid;
+  gap: $spacing-md;
+
+  [data-theme='light'] & { border-color: rgba($light-text-primary, 0.08); }
+  [data-theme='dark'] & { border-color: rgba($dark-text-primary, 0.08); }
+}
+
+.applied-date {
+  font-size: 0.78rem;
+  @include text-secondary;
+}
+
+.action-buttons {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.btn-action {
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  border: 1px solid;
+
+  &.btn-upload {
+    background: rgba($success, 0.1);
+    border-color: rgba($success, 0.3);
+    color: $success;
+    &:hover { background: rgba($success, 0.18); }
+  }
+
+  &.btn-schedule {
+    background: rgba($primary, 0.08);
+    border-color: rgba($primary, 0.3);
+    color: $primary;
+    &:hover { background: rgba($primary, 0.15); }
+  }
+
+  &.btn-status {
+    background: transparent;
+    border-color: rgba(107, 114, 128, 0.3);
+    color: #6b7280;
+    &:hover { background: rgba(107, 114, 128, 0.08); }
+  }
+}
+
+// Modal
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: $z-modal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+  @include glass-card;
+  width: 100%;
+  max-width: 440px;
+  margin: $spacing-xl;
+  animation: slideUp 0.25s ease;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-lg;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  @include text-primary;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  @include text-secondary;
+  &:hover { @include text-primary; }
+}
+
+.modal-body {
+  margin-bottom: $spacing-lg;
+}
+
+.modal-candidate {
+  font-size: 0.875rem;
+  font-weight: 500;
+  @include text-secondary;
+  margin-bottom: $spacing-lg;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: $spacing-md;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  @include text-secondary;
+}
+
+.form-input {
+  @include glass-input;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-md;
+}
+
+.btn-secondary {
+  padding: $spacing-sm $spacing-lg;
+  border-radius: $radius-md;
+  border: 1px solid;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  [data-theme='light'] & {
+    border-color: rgba($light-text-primary, 0.2);
+    color: $light-text-secondary;
+    &:hover { background: rgba($light-text-primary, 0.05); }
+  }
+  [data-theme='dark'] & {
+    border-color: rgba($dark-text-primary, 0.2);
+    color: $dark-text-secondary;
+    &:hover { background: rgba($dark-text-primary, 0.05); }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -43,3 +43,6 @@ backend/check_leave_requests.py
 backend/clear_database.py
 backend/clear_leave_data.py
 backend/create_default_balances.py
+/.claude
+*.excalidraw
+hiring-sequence.png

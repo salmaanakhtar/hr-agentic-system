@@ -1,0 +1,107 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">{{ isEditMode ? 'Edit Job Posting' : 'New Job Posting' }}</h1>
+    <a routerLink="/hiring/jobs" class="back-link">Back to Jobs</a>
+  </div>
+
+  <div class="form-card">
+    <div class="error-banner" *ngIf="error">
+      <span class="error-icon">!</span>
+      <span>{{ error }}</span>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-section">
+        <h3 class="section-title">Position Details</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Job Title *</label>
+            <input class="form-input" [class.invalid]="isFieldInvalid('title')"
+              formControlName="title" placeholder="e.g. Senior Software Engineer" />
+            <span class="field-error" *ngIf="isFieldInvalid('title')">Job title is required</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Department *</label>
+            <input class="form-input" [class.invalid]="isFieldInvalid('department')"
+              formControlName="department" placeholder="e.g. Engineering" />
+            <span class="field-error" *ngIf="isFieldInvalid('department')">Department is required</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Employment Type *</label>
+            <select class="form-input" formControlName="employment_type">
+              <option *ngFor="let t of employmentTypes" [value]="t.value">{{ t.label }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Location</label>
+            <input class="form-input" formControlName="location" placeholder="e.g. London, UK or Remote" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Experience Required (years)</label>
+            <input class="form-input" type="number" formControlName="experience_years"
+              placeholder="e.g. 3" min="0" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Salary Range</label>
+            <div class="salary-row">
+              <input class="form-input" type="number" formControlName="salary_min" placeholder="Min" />
+              <span class="salary-sep">–</span>
+              <input class="form-input" type="number" formControlName="salary_max" placeholder="Max" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="section-title">Job Details</h3>
+        <div class="form-group">
+          <label class="form-label">Description *</label>
+          <textarea class="form-input" [class.invalid]="isFieldInvalid('description')"
+            formControlName="description" rows="4"
+            placeholder="Describe the role, responsibilities, and team..."></textarea>
+          <span class="field-error" *ngIf="isFieldInvalid('description')">Description is required</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Requirements *</label>
+          <textarea class="form-input" [class.invalid]="isFieldInvalid('requirements')"
+            formControlName="requirements" rows="4"
+            placeholder="List the key requirements for this role..."></textarea>
+          <span class="field-error" *ngIf="isFieldInvalid('requirements')">Requirements are required</span>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="section-title">Required Skills</h3>
+        <p class="section-hint">Skills are used by the AI for CV matching. Press Enter or click Add.</p>
+        <div class="skill-input-row">
+          <input class="form-input skill-input"
+            [(ngModel)]="newSkill" [ngModelOptions]="{standalone: true}"
+            (keydown)="onSkillKeydown($event)"
+            placeholder="e.g. Python, React, SQL..." />
+          <button type="button" class="btn-add-skill" (click)="addSkill()">Add</button>
+        </div>
+        <div class="skills-chips" *ngIf="skills.length > 0">
+          <span class="skill-chip" *ngFor="let skill of skills">
+            {{ skill }}
+            <button type="button" class="chip-remove" (click)="removeSkill(skill)">×</button>
+          </span>
+        </div>
+        <p class="no-skills-hint" *ngIf="skills.length === 0">No skills added yet</p>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" routerLink="/hiring/jobs">Cancel</button>
+        <button type="submit" class="btn-primary" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Saving...' : (isEditMode ? 'Update Job' : 'Create Job Posting') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

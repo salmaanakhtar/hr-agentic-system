@@ -1,0 +1,109 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">Candidate Profile</h1>
+    <a routerLink="/hiring/candidates/upload" class="back-link">Upload Candidate</a>
+  </div>
+
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner">Loading candidate profile...</div>
+  </div>
+
+  <div class="error-banner" *ngIf="error && !isLoading">
+    <span>!</span><span>{{ error }}</span>
+  </div>
+
+  <ng-container *ngIf="candidate && !isLoading">
+    <!-- Profile Card -->
+    <div class="profile-card">
+      <div class="profile-header">
+        <div class="avatar">
+          {{ candidate.first_name[0] }}{{ candidate.last_name[0] }}
+        </div>
+        <div class="profile-info">
+          <h2 class="candidate-name">{{ candidate.full_name }}</h2>
+          <p class="candidate-title" *ngIf="candidate.current_title">{{ candidate.current_title }}</p>
+          <p class="candidate-email">{{ candidate.email }}</p>
+          <p class="candidate-phone" *ngIf="candidate.phone">{{ candidate.phone }}</p>
+        </div>
+        <div class="profile-meta">
+          <span class="embedding-badge" *ngIf="candidate.has_embedding">AI-Indexed</span>
+          <a *ngIf="candidate.linkedin_url" [href]="candidate.linkedin_url" target="_blank" class="linkedin-link">LinkedIn</a>
+        </div>
+      </div>
+
+      <div class="profile-body">
+        <!-- Skills -->
+        <div class="section" *ngIf="candidate.skills?.length > 0">
+          <h3 class="section-title">Skills</h3>
+          <div class="skills-chips">
+            <span class="skill-chip" *ngFor="let skill of candidate.skills">{{ skill }}</span>
+          </div>
+        </div>
+
+        <!-- Experience & Education -->
+        <div class="stats-row">
+          <div class="stat-panel" *ngIf="candidate.experience_years != null">
+            <span class="stat-value">{{ candidate.experience_years }}</span>
+            <span class="stat-label">Years Experience</span>
+          </div>
+          <div class="stat-panel" *ngIf="candidate.education?.length > 0">
+            <div class="education-list">
+              <p class="education-item" *ngFor="let edu of candidate.education">{{ edu }}</p>
+            </div>
+            <span class="stat-label">Education</span>
+          </div>
+        </div>
+
+        <!-- CV Info -->
+        <div class="section" *ngIf="candidate.cv_filename">
+          <h3 class="section-title">CV File</h3>
+          <p class="cv-filename">{{ candidate.cv_filename }}</p>
+          <p class="cv-date">Uploaded {{ formatDate(candidate.created_at) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Applications -->
+    <div class="applications-section" *ngIf="applications.length > 0">
+      <h2 class="section-heading">Applications</h2>
+      <div class="application-card" *ngFor="let app of applications">
+        <div class="app-header">
+          <div>
+            <p class="app-job-title">{{ app.job?.title ?? 'Job #' + app.job_id }}</p>
+            <p class="app-job-dept">{{ app.job?.department }}</p>
+          </div>
+          <div class="app-badges">
+            <span class="status-badge" [ngClass]="getStatusClass(app.status)">{{ app.status | titlecase }}</span>
+            <span class="decision-badge" *ngIf="app.llm_decision" [ngClass]="getDecisionClass(app.llm_decision)">
+              AI: {{ app.llm_decision }}
+            </span>
+          </div>
+        </div>
+
+        <div class="app-scores" *ngIf="app.similarity_score != null || app.skill_coverage != null">
+          <div class="score-item" *ngIf="app.similarity_score != null">
+            <span class="score-label">Similarity</span>
+            <span class="score-value">{{ formatScore(app.similarity_score) }}</span>
+          </div>
+          <div class="score-item" *ngIf="app.skill_coverage != null">
+            <span class="score-label">Skill Coverage</span>
+            <span class="score-value">{{ formatScore(app.skill_coverage) }}</span>
+          </div>
+          <div class="score-item" *ngIf="app.rank != null">
+            <span class="score-label">Rank</span>
+            <span class="score-value">#{{ app.rank }}</span>
+          </div>
+        </div>
+
+        <div class="app-footer">
+          <span class="app-date">Applied {{ formatDate(app.applied_at) }}</span>
+          <a [routerLink]="['/hiring/pipeline', app.job_id]" class="view-pipeline-link">View Pipeline</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-applications" *ngIf="applications.length === 0">
+      <p>No applications yet for this candidate.</p>
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,83 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">Job Postings</h1>
+    <a routerLink="/hiring/jobs/new" class="btn-primary">+ New Job</a>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-panel">
+    <select class="filter-input" [(ngModel)]="statusFilter" (change)="loadJobs()">
+      <option *ngFor="let s of statuses" [value]="s.value">{{ s.label }}</option>
+    </select>
+    <input class="filter-input" [(ngModel)]="departmentFilter"
+      placeholder="Filter by department..." (keyup.enter)="loadJobs()" />
+    <button class="btn-filter" (click)="loadJobs()">Search</button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner">Loading job postings...</div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-banner" *ngIf="error && !isLoading">
+    <span>!</span><span>{{ error }}</span>
+  </div>
+
+  <!-- Empty -->
+  <div class="empty-state" *ngIf="!isLoading && !error && jobs.length === 0">
+    <p class="empty-text">No job postings found</p>
+    <p class="empty-sub">Create a new job posting to get started</p>
+    <a routerLink="/hiring/jobs/new" class="btn-primary">Create Job Posting</a>
+  </div>
+
+  <!-- Job Cards -->
+  <div class="jobs-grid" *ngIf="!isLoading && jobs.length > 0">
+    <div class="job-card" *ngFor="let job of jobs">
+      <div class="job-card-header">
+        <div class="job-info">
+          <h2 class="job-title">{{ job.title }}</h2>
+          <p class="job-meta">{{ job.department }} &bull; {{ formatEmploymentType(job.employment_type) }}</p>
+        </div>
+        <span class="status-badge" [ngClass]="getStatusClass(job.status)">
+          {{ job.status.replace('_', ' ') | titlecase }}
+        </span>
+      </div>
+
+      <div class="job-details">
+        <span class="detail-item" *ngIf="job.location">
+          <span class="detail-label">Location</span>
+          <span class="detail-value">{{ job.location }}</span>
+        </span>
+        <span class="detail-item" *ngIf="job.experience_years">
+          <span class="detail-label">Experience</span>
+          <span class="detail-value">{{ job.experience_years }}+ years</span>
+        </span>
+        <span class="detail-item">
+          <span class="detail-label">Salary</span>
+          <span class="detail-value">{{ formatSalary(job.salary_min, job.salary_max) }}</span>
+        </span>
+        <span class="detail-item">
+          <span class="detail-label">Posted</span>
+          <span class="detail-value">{{ formatDate(job.created_at) }}</span>
+        </span>
+      </div>
+
+      <div class="skills-row" *ngIf="job.required_skills?.length > 0">
+        <span class="skill-chip" *ngFor="let skill of job.required_skills.slice(0, 5)">{{ skill }}</span>
+        <span class="skill-chip skill-more" *ngIf="job.required_skills.length > 5">
+          +{{ job.required_skills.length - 5 }} more
+        </span>
+      </div>
+
+      <div class="job-actions">
+        <a [routerLink]="['/hiring/pipeline', job.id]" class="btn-action btn-pipeline">
+          View Pipeline
+        </a>
+        <a [routerLink]="['/hiring/jobs', job.id, 'edit']" class="btn-action btn-edit">
+          Edit
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

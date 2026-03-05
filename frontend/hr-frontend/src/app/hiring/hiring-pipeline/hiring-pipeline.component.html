@@ -1,0 +1,172 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Hiring Pipeline</h1>
+      <p class="page-sub" *ngIf="job">{{ job.title }} &bull; {{ job.department }}</p>
+    </div>
+    <div class="header-actions">
+      <a routerLink="/hiring/candidates/upload" class="btn-action btn-upload">+ Add Candidate</a>
+      <a routerLink="/hiring/jobs" class="back-link">Back to Jobs</a>
+    </div>
+  </div>
+
+  <!-- Job Summary Panel -->
+  <div class="job-summary-panel" *ngIf="job">
+    <div class="summary-item">
+      <span class="summary-label">Type</span>
+      <span class="summary-value">{{ formatEmploymentType(job.employment_type) }}</span>
+    </div>
+    <div class="summary-item" *ngIf="job.location">
+      <span class="summary-label">Location</span>
+      <span class="summary-value">{{ job.location }}</span>
+    </div>
+    <div class="summary-item" *ngIf="job.experience_years">
+      <span class="summary-label">Experience</span>
+      <span class="summary-value">{{ job.experience_years }}+ years</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Status</span>
+      <span class="summary-value status-text" [class.open]="job.status === 'open'">
+        {{ job.status | titlecase }}
+      </span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Applications</span>
+      <span class="summary-value">{{ applications.length }}</span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner">Loading applications...</div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-banner" *ngIf="error && !isLoading">
+    <span>!</span><span>{{ error }}</span>
+  </div>
+
+  <!-- Empty -->
+  <div class="empty-state" *ngIf="!isLoading && !error && applications.length === 0">
+    <p class="empty-text">No applications yet</p>
+    <p class="empty-sub">Upload a candidate and submit an application to begin AI evaluation.</p>
+    <a routerLink="/hiring/candidates/upload" class="btn-primary">Upload Candidate</a>
+  </div>
+
+  <!-- Applications List -->
+  <div class="applications-list" *ngIf="!isLoading && applications.length > 0">
+    <div class="app-card" *ngFor="let app of applications">
+      <!-- Card Header -->
+      <div class="app-card-header">
+        <div class="candidate-info">
+          <div class="avatar">
+            {{ app.candidate?.full_name?.charAt(0) ?? '#' }}
+          </div>
+          <div>
+            <p class="candidate-name">
+              <a [routerLink]="['/hiring/candidates', app.candidate_id]" class="candidate-link">
+                {{ app.candidate?.full_name ?? 'Candidate #' + app.candidate_id }}
+              </a>
+            </p>
+            <p class="candidate-email">{{ app.candidate?.email }}</p>
+          </div>
+        </div>
+
+        <div class="app-badges">
+          <span class="rank-badge" *ngIf="app.rank != null">#{{ app.rank }}</span>
+          <span class="decision-badge" *ngIf="app.llm_decision" [ngClass]="getDecisionClass(app.llm_decision)">
+            {{ getDecisionLabel(app.llm_decision) }}
+          </span>
+          <span class="status-badge" [ngClass]="getStatusClass(app.status)">{{ app.status | titlecase }}</span>
+        </div>
+      </div>
+
+      <!-- Scores -->
+      <div class="scores-panel" *ngIf="app.similarity_score != null || app.skill_coverage != null">
+        <div class="score-item" *ngIf="app.similarity_score != null">
+          <span class="score-label">Similarity Match</span>
+          <div class="score-bar-wrapper">
+            <div class="score-bar" [style.width]="formatScore(app.similarity_score)"></div>
+          </div>
+          <span class="score-value">{{ formatScore(app.similarity_score) }}</span>
+        </div>
+        <div class="score-item" *ngIf="app.skill_coverage != null">
+          <span class="score-label">Skill Coverage</span>
+          <div class="score-bar-wrapper">
+            <div class="score-bar score-bar-skill" [style.width]="formatScore(app.skill_coverage)"></div>
+          </div>
+          <span class="score-value">{{ formatScore(app.skill_coverage) }}</span>
+        </div>
+      </div>
+
+      <!-- Interview Info -->
+      <div class="interview-info" *ngIf="app.interview_date">
+        <span class="interview-label">Interview</span>
+        <span class="interview-date">{{ formatDate(app.interview_date) }}</span>
+        <span class="interview-notes" *ngIf="app.interview_notes">– {{ app.interview_notes }}</span>
+      </div>
+
+      <!-- LLM Reasoning Toggle -->
+      <div class="reasoning-toggle" *ngIf="app.llm_reasoning">
+        <button class="btn-toggle-reasoning" (click)="toggleReasoning(app.id)">
+          {{ isReasoningExpanded(app.id) ? 'Hide AI Reasoning' : 'Show AI Reasoning' }}
+        </button>
+      </div>
+
+      <!-- LLM Reasoning Display -->
+      <div class="reasoning-container" *ngIf="isReasoningExpanded(app.id) && app.llm_reasoning">
+        <app-llm-reasoning-display
+          [decision]="getDisplayDecision(app.llm_decision)"
+          [reasoning]="app.llm_reasoning"
+          [confidence]="app.similarity_score ?? 0"
+          [factors]="[]"
+          [recommendations]="[]">
+        </app-llm-reasoning-display>
+      </div>
+
+      <!-- Card Actions -->
+      <div class="app-card-actions">
+        <span class="applied-date">Applied {{ formatDate(app.applied_at) }}</span>
+        <div class="action-buttons">
+          <a [routerLink]="['/hiring/interview', app.id]" class="btn-action btn-schedule"
+            *ngIf="app.status === 'shortlisted' || app.status === 'applied'">
+            Schedule Interview
+          </a>
+          <button class="btn-action btn-status" (click)="openStatusModal(app)">
+            Update Status
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal-overlay" *ngIf="showStatusModal" (click)="closeStatusModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">Update Application Status</h3>
+      <button class="modal-close" (click)="closeStatusModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-candidate">{{ selectedApp?.candidate?.full_name }}</p>
+      <div class="form-group">
+        <label class="form-label">New Status</label>
+        <select class="form-input" [(ngModel)]="newStatus">
+          <option *ngFor="let s of statusOptions" [value]="s.value">{{ s.label }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes (optional)</label>
+        <textarea class="form-input" [(ngModel)]="statusNotes" rows="3"
+          placeholder="Add notes about this status change..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeStatusModal()">Cancel</button>
+      <button class="btn-primary" (click)="confirmStatusUpdate()" [disabled]="isUpdating">
+        {{ isUpdating ? 'Updating...' : 'Update Status' }}
+      </button>
+    </div>
+  </div>
+</div>

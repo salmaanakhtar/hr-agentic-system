@@ -1,0 +1,128 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">Upload Candidate</h1>
+    <a routerLink="/hiring/jobs" class="back-link">Back to Jobs</a>
+  </div>
+
+  <!-- Success State -->
+  <div class="result-card" *ngIf="result">
+    <div class="result-header success">
+      <span class="result-icon">✓</span>
+      <div>
+        <h2 class="result-title">Candidate Uploaded Successfully</h2>
+        <p class="result-sub">{{ result.full_name }} has been added to the candidate pool.</p>
+      </div>
+    </div>
+
+    <div class="result-details">
+      <div class="detail-row">
+        <span class="detail-label">Name</span>
+        <span class="detail-value">{{ result.full_name }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Email</span>
+        <span class="detail-value">{{ result.email }}</span>
+      </div>
+      <div class="detail-row" *ngIf="result.phone">
+        <span class="detail-label">Phone</span>
+        <span class="detail-value">{{ result.phone }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">CV File</span>
+        <span class="detail-value">{{ result.cv_filename }}</span>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn-secondary" (click)="uploadAnother()">Upload Another</button>
+      <button class="btn-primary" (click)="viewCandidate()">View Profile</button>
+    </div>
+  </div>
+
+  <!-- Upload Form -->
+  <div class="form-card" *ngIf="!result">
+    <div class="error-banner" *ngIf="error">
+      <span>!</span><span>{{ error }}</span>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="form-section">
+        <h3 class="section-title">Personal Information</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">First Name *</label>
+            <input class="form-input" [class.invalid]="isFieldInvalid('first_name')"
+              formControlName="first_name" placeholder="John" />
+            <span class="field-error" *ngIf="isFieldInvalid('first_name')">First name is required</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name *</label>
+            <input class="form-input" [class.invalid]="isFieldInvalid('last_name')"
+              formControlName="last_name" placeholder="Smith" />
+            <span class="field-error" *ngIf="isFieldInvalid('last_name')">Last name is required</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email Address *</label>
+            <input class="form-input" [class.invalid]="isFieldInvalid('email')"
+              formControlName="email" type="email" placeholder="john.smith@example.com" />
+            <span class="field-error" *ngIf="isFieldInvalid('email')">Valid email is required</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input class="form-input" formControlName="phone" placeholder="+44 7700 000000" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">LinkedIn URL</label>
+          <input class="form-input" formControlName="linkedin_url"
+            placeholder="https://linkedin.com/in/..." />
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3 class="section-title">CV Upload</h3>
+        <p class="section-hint">PDF only, maximum 10MB. The AI will parse skills, experience, and education for matching.</p>
+
+        <div class="upload-zone"
+          [class.dragging]="isDragging"
+          [class.has-file]="selectedFile"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave()"
+          (drop)="onDrop($event)">
+
+          <div class="upload-content" *ngIf="!selectedFile">
+            <div class="upload-icon">PDF</div>
+            <p class="upload-text">Drag & drop CV here</p>
+            <p class="upload-sub">or</p>
+            <label class="btn-browse">
+              Browse File
+              <input type="file" accept=".pdf" hidden (change)="onFileChange($event)" />
+            </label>
+          </div>
+
+          <div class="file-preview" *ngIf="selectedFile">
+            <div class="file-icon">PDF</div>
+            <div class="file-info">
+              <p class="file-name">{{ selectedFile.name }}</p>
+              <p class="file-size">{{ (selectedFile.size / 1024).toFixed(0) }} KB</p>
+            </div>
+            <button type="button" class="file-remove" (click)="removeFile()">×</button>
+          </div>
+        </div>
+
+        <p class="field-error" *ngIf="fileError">{{ fileError }}</p>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" routerLink="/hiring/jobs">Cancel</button>
+        <button type="submit" class="btn-primary" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Uploading...' : 'Upload Candidate' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
