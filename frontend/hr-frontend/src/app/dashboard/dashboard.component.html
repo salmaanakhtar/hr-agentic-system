@@ -44,6 +44,16 @@
       </ul>
     </div>
 
+    <!-- Hiring Pipeline -->
+    <div class="nav-section" *ngIf="user.role === 'manager' || user.role === 'hr' || user.role === 'admin'">
+      <h3>Hiring Pipeline</h3>
+      <ul class="nav-links">
+        <li><a routerLink="/hiring/jobs">Job Postings</a></li>
+        <li><a routerLink="/hiring/jobs/new">Create Job Posting</a></li>
+        <li><a routerLink="/hiring/candidates/upload">Upload Candidate CV</a></li>
+      </ul>
+    </div>
+
   </div>
 
   <div *ngIf="!user" class="loading">

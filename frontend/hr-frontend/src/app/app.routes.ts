@@ -10,6 +10,12 @@ import { TeamCalendarComponent } from './leave/team-calendar/team-calendar.compo
 import { ExpenseRequestFormComponent } from './expenses/expense-request-form/expense-request-form.component';
 import { ExpenseHistoryComponent } from './expenses/expense-history/expense-history.component';
 import { PendingExpenseApprovalsComponent } from './expenses/pending-expense-approvals/pending-expense-approvals.component';
+import { JobListComponent } from './hiring/job-list/job-list.component';
+import { JobPostingFormComponent } from './hiring/job-posting-form/job-posting-form.component';
+import { CandidateUploadComponent } from './hiring/candidate-upload/candidate-upload.component';
+import { CandidateProfileComponent } from './hiring/candidate-profile/candidate-profile.component';
+import { HiringPipelineComponent } from './hiring/hiring-pipeline/hiring-pipeline.component';
+import { InterviewScheduleComponent } from './hiring/interview-schedule/interview-schedule.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -28,6 +34,15 @@ export const routes: Routes = [
   { path: 'expenses/submit', component: ExpenseRequestFormComponent },
   { path: 'expenses/history', component: ExpenseHistoryComponent },
   { path: 'expenses/approvals', component: PendingExpenseApprovalsComponent },
+
+  // Hiring Pipeline Routes
+  { path: 'hiring/jobs', component: JobListComponent },
+  { path: 'hiring/jobs/new', component: JobPostingFormComponent },
+  { path: 'hiring/jobs/:id/edit', component: JobPostingFormComponent },
+  { path: 'hiring/pipeline/:jobId', component: HiringPipelineComponent },
+  { path: 'hiring/candidates/upload', component: CandidateUploadComponent },
+  { path: 'hiring/candidates/:id', component: CandidateProfileComponent },
+  { path: 'hiring/interview/:applicationId', component: InterviewScheduleComponent },
 
   { path: '**', redirectTo: '/login' }
 ];
