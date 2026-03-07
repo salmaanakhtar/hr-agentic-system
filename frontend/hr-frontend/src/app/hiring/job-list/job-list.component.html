@@ -63,7 +63,7 @@
         </span>
       </div>
 
-      <div class="skills-row" *ngIf="job.required_skills?.length > 0">
+      <div class="skills-row" *ngIf="!!job.required_skills?.length">
         <span class="skill-chip" *ngFor="let skill of job.required_skills.slice(0, 5)">{{ skill }}</span>
         <span class="skill-chip skill-more" *ngIf="job.required_skills.length > 5">
           +{{ job.required_skills.length - 5 }} more

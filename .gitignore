@@ -46,3 +46,6 @@ backend/create_default_balances.py
 /.claude
 *.excalidraw
 hiring-sequence.png
+backend/test_hiring_api.py
+backend/test_cv_parser.py
+backend/test_hiring_agent.py

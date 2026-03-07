@@ -33,7 +33,7 @@
 
       <div class="profile-body">
         <!-- Skills -->
-        <div class="section" *ngIf="candidate.skills?.length > 0">
+        <div class="section" *ngIf="!!candidate.skills?.length">
           <h3 class="section-title">Skills</h3>
           <div class="skills-chips">
             <span class="skill-chip" *ngFor="let skill of candidate.skills">{{ skill }}</span>
@@ -46,7 +46,7 @@
             <span class="stat-value">{{ candidate.experience_years }}</span>
             <span class="stat-label">Years Experience</span>
           </div>
-          <div class="stat-panel" *ngIf="candidate.education?.length > 0">
+          <div class="stat-panel" *ngIf="!!candidate.education?.length">
             <div class="education-list">
               <p class="education-item" *ngFor="let edu of candidate.education">{{ edu }}</p>
             </div>
