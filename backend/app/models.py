@@ -33,6 +33,9 @@ class Employee(Base):
     last_name = Column(String)
     email = Column(String, unique=True, index=True)
     department = Column(String, nullable=True)
+    base_salary = Column(Float, nullable=True)        # Annual gross salary
+    pay_frequency = Column(String, default="monthly") # monthly | biweekly
+    tax_rate = Column(Float, default=0.20)            # Flat tax rate (e.g. 0.20 = 20%)
 
     user = relationship("User")
 
@@ -385,3 +388,67 @@ class JobApplication(Base):
     job = relationship("JobPosting", back_populates="applications")
     candidate = relationship("Candidate", back_populates="applications")
     reviewer = relationship("User", foreign_keys=[reviewed_by])
+
+
+# ---------------------------------------------------------------------------
+# Payroll
+# ---------------------------------------------------------------------------
+
+class PayCycleStatus(str, Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class PayslipStatus(str, Enum):
+    DRAFT = "draft"
+    APPROVED = "approved"
+    PAID = "paid"
+
+
+class PayrollDecision(str, Enum):
+    APPROVE = "APPROVE"
+    HOLD = "HOLD"
+    FLAG = "FLAG"
+
+
+class PayCycle(Base):
+    __tablename__ = "pay_cycles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    period_start = Column(Date, nullable=False, index=True)
+    period_end = Column(Date, nullable=False, index=True)
+    status = Column(String, default=PayCycleStatus.PENDING.value, index=True)
+    run_by = Column(Integer, ForeignKey("users.id"), nullable=True)   # HR/admin who triggered
+    run_at = Column(DateTime, nullable=True)                           # When the run was triggered
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    runner = relationship("User", foreign_keys=[run_by])
+    payslips = relationship("Payslip", back_populates="pay_cycle", cascade="all, delete-orphan")
+
+
+class Payslip(Base):
+    __tablename__ = "payslips"
+
+    id = Column(Integer, primary_key=True, index=True)
+    employee_id = Column(Integer, ForeignKey("employees.id"), nullable=False, index=True)
+    pay_cycle_id = Column(Integer, ForeignKey("pay_cycles.id"), nullable=False, index=True)
+    gross_pay = Column(Float, nullable=False)
+    deductions_leave = Column(Float, default=0.0)   # Unpaid leave deductions
+    deductions_tax = Column(Float, default=0.0)     # Tax withheld
+    net_pay = Column(Float, nullable=False)
+    days_worked = Column(Float, nullable=False)      # Working days in period minus leave
+    leave_days_taken = Column(Float, default=0.0)   # Total leave days in period
+    llm_decision = Column(String, nullable=True)    # APPROVE, HOLD, FLAG
+    llm_reasoning = Column(Text, nullable=True)
+    status = Column(String, default=PayslipStatus.DRAFT.value, index=True)
+    approved_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    approved_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    employee = relationship("Employee", foreign_keys=[employee_id])
+    pay_cycle = relationship("PayCycle", back_populates="payslips")
+    approver = relationship("User", foreign_keys=[approved_by])
