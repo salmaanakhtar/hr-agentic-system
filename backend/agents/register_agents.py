@@ -10,6 +10,7 @@ from agents.examples import HelloWorldAgent
 from agents.leave_agent import LeaveAgent
 from agents.expense_agent import ExpenseAgent
 from agents.hiring_agent import HiringAgent
+from agents.payroll_agent import PayrollAgent
 from agents.orchestrator import OrchestratorAgent
 import logging
 
@@ -38,6 +39,9 @@ def register_all_agents():
 
     registry.register(HiringAgent())
     logger.info("Registered: HiringAgent")
+
+    registry.register(PayrollAgent())
+    logger.info("Registered: PayrollAgent")
 
     # Register orchestrator
     registry.register(OrchestratorAgent())

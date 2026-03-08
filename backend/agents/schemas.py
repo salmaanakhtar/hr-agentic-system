@@ -255,3 +255,33 @@ class ApplicationStatusUpdate(BaseModel):
 class InterviewScheduleCreate(BaseModel):
     interview_date: str   # ISO 8601 datetime string
     interview_notes: Optional[str] = None
+
+
+# ---------------------------------------------------------------------------
+# Payroll Schemas (Phase 6.2)
+# ---------------------------------------------------------------------------
+
+class PayrollRunInput(BaseModel):
+    employee_id: int
+    pay_cycle_id: int
+    period_start: str   # ISO date YYYY-MM-DD
+    period_end: str     # ISO date YYYY-MM-DD
+    run_by_user_id: int
+
+
+class PayrollRunOutput(BaseModel):
+    success: bool
+    message: str
+    reasoning: str
+    decision: str       # APPROVE, HOLD, FLAG
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    payslip_id: Optional[int] = None
+    employee_id: int
+    gross_pay: Optional[float] = None
+    deductions_leave: Optional[float] = None
+    deductions_tax: Optional[float] = None
+    net_pay: Optional[float] = None
+    days_worked: Optional[float] = None
+    leave_days_taken: Optional[float] = None
+    factors: List[str] = Field(default_factory=list)
+    recommendations: List[str] = Field(default_factory=list)
