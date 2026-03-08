@@ -285,3 +285,16 @@ class PayrollRunOutput(BaseModel):
     leave_days_taken: Optional[float] = None
     factors: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Payroll API Request Schemas (Phase 6.3)
+# ---------------------------------------------------------------------------
+
+class PayCycleCreate(BaseModel):
+    period_start: str   # ISO date YYYY-MM-DD
+    period_end: str     # ISO date YYYY-MM-DD
+
+
+class PayslipApprove(BaseModel):
+    notes: Optional[str] = None

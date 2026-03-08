@@ -116,10 +116,11 @@ os.makedirs(os.path.join(_uploads_dir, "cvs"), exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=_uploads_dir), name="uploads")
 
 # Include routers
-from app.routers import leave, expenses, hiring
+from app.routers import leave, expenses, hiring, payroll
 app.include_router(leave.router)
 app.include_router(expenses.router)
 app.include_router(hiring.router)
+app.include_router(payroll.router)
 
 @app.on_event("startup")
 def startup_event():
