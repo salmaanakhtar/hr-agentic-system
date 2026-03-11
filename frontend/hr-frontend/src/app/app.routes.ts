@@ -16,6 +16,9 @@ import { CandidateUploadComponent } from './hiring/candidate-upload/candidate-up
 import { CandidateProfileComponent } from './hiring/candidate-profile/candidate-profile.component';
 import { HiringPipelineComponent } from './hiring/hiring-pipeline/hiring-pipeline.component';
 import { InterviewScheduleComponent } from './hiring/interview-schedule/interview-schedule.component';
+import { PayCycleRunComponent } from './payroll/pay-cycle-run/pay-cycle-run.component';
+import { PayrollHistoryComponent } from './payroll/payroll-history/payroll-history.component';
+import { PayslipComponent } from './payroll/payslip/payslip.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -43,6 +46,11 @@ export const routes: Routes = [
   { path: 'hiring/candidates/upload', component: CandidateUploadComponent },
   { path: 'hiring/candidates/:id', component: CandidateProfileComponent },
   { path: 'hiring/interview/:applicationId', component: InterviewScheduleComponent },
+
+  // Payroll Routes
+  { path: 'payroll/run', component: PayCycleRunComponent },
+  { path: 'payroll/history', component: PayrollHistoryComponent },
+  { path: 'payroll/payslips/:id', component: PayslipComponent },
 
   { path: '**', redirectTo: '/login' }
 ];

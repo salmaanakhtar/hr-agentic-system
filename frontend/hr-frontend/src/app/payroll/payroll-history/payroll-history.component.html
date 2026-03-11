@@ -1,0 +1,125 @@
+<div class="history-container">
+  <div class="header">
+    <h1 class="title">{{ isHrAdmin ? 'Payroll History' : 'My Payslips' }}</h1>
+    <p class="subtitle">
+      {{ isHrAdmin ? 'All pay cycles and their payslips.' : 'Your payslip history.' }}
+    </p>
+    <a routerLink="/payroll/run" class="btn-run-link" *ngIf="isHrAdmin">Run New Cycle</a>
+  </div>
+
+  <!-- HR/Admin: status filter -->
+  <div class="filters-card" *ngIf="isHrAdmin">
+    <div class="filter-group">
+      <label class="filter-label">Status</label>
+      <select class="filter-select" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
+        <option *ngFor="let s of cycleStatuses" [value]="s.value">{{ s.label }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="loading-container" *ngIf="isLoading">
+    <p class="loading-spinner">Loading...</p>
+  </div>
+
+  <div class="error-banner" *ngIf="error && !isLoading">
+    <span class="error-icon">!</span>
+    <span>{{ error }}</span>
+  </div>
+
+  <!-- HR/Admin: cycles list -->
+  <ng-container *ngIf="isHrAdmin && !isLoading">
+    <div class="empty-state" *ngIf="!cycles.length && !error">
+      <span class="empty-icon">$</span>
+      <p class="empty-text">No pay cycles found.</p>
+      <p class="empty-sub"><a routerLink="/payroll/run">Run a pay cycle</a> to get started.</p>
+    </div>
+
+    <div class="cycle-card" *ngFor="let cycle of cycles">
+      <div class="cycle-header" (click)="toggleCycle(cycle)">
+        <div class="cycle-info">
+          <span class="cycle-period">{{ formatDate(cycle.period_start) }} — {{ formatDate(cycle.period_end) }}</span>
+          <span class="cycle-meta">{{ cycle.payslip_count }} payslip(s) &middot; Run {{ formatDate(cycle.run_at) }}</span>
+        </div>
+        <div class="cycle-right">
+          <span class="status-badge" [class]="getStatusClass(cycle.status)">{{ cycle.status | titlecase }}</span>
+          <span class="toggle-icon">{{ expandedCycleId === cycle.id ? '▲' : '▼' }}</span>
+        </div>
+      </div>
+
+      <div class="cycle-payslips" *ngIf="expandedCycleId === cycle.id">
+        <div class="payslips-loading" *ngIf="loadingPayslips">Loading payslips...</div>
+
+        <div class="payslips-empty" *ngIf="!loadingPayslips && !expandedPayslips.length">
+          No payslips for this cycle.
+        </div>
+
+        <table class="payslips-table" *ngIf="!loadingPayslips && expandedPayslips.length">
+          <thead>
+            <tr>
+              <th>Employee</th>
+              <th>Gross</th>
+              <th>Net Pay</th>
+              <th>AI Decision</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ps of expandedPayslips" class="table-row">
+              <td>{{ ps.employee_name || '—' }}</td>
+              <td>{{ formatCurrency(ps.gross_pay) }}</td>
+              <td class="amount-cell">{{ formatCurrency(ps.net_pay) }}</td>
+              <td>
+                <span class="decision-badge" [class]="getDecisionClass(ps.llm_decision)">
+                  {{ ps.llm_decision || '—' }}
+                </span>
+              </td>
+              <td>
+                <span class="status-badge" [class]="getStatusClass(ps.status)">{{ ps.status | titlecase }}</span>
+              </td>
+              <td>
+                <button class="btn-view" (click)="viewPayslip(ps.id)">View</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Employee: own payslips list -->
+  <ng-container *ngIf="!isHrAdmin && !isLoading">
+    <div class="empty-state" *ngIf="!payslips.length && !error">
+      <span class="empty-icon">$</span>
+      <p class="empty-text">No payslips found.</p>
+      <p class="empty-sub">Your payslips will appear here once a pay cycle is run.</p>
+    </div>
+
+    <div class="table-container" *ngIf="payslips.length">
+      <table class="payslips-table">
+        <thead>
+          <tr>
+            <th>Period</th>
+            <th>Gross</th>
+            <th>Net Pay</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ps of payslips" class="table-row">
+            <td>{{ formatDate(ps.created_at) }}</td>
+            <td>{{ formatCurrency(ps.gross_pay) }}</td>
+            <td class="amount-cell">{{ formatCurrency(ps.net_pay) }}</td>
+            <td>
+              <span class="status-badge" [class]="getStatusClass(ps.status)">{{ ps.status | titlecase }}</span>
+            </td>
+            <td>
+              <button class="btn-view" (click)="viewPayslip(ps.id)">View</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</div>

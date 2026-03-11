@@ -1,0 +1,203 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.payslip-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.loading-container {
+  @include glass-card;
+  text-align: center;
+  padding: 3rem;
+}
+
+.loading-spinner {
+  @include text-secondary;
+  font-size: 1rem;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.error-banner {
+  @include glass-card;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: $error;
+  margin-bottom: 1rem;
+}
+
+.error-icon { font-size: 1.1rem; font-weight: 700; }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title {
+  @include text-primary;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+  background: linear-gradient(135deg, $primary, $primary-light);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  @include text-secondary;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.8rem;
+  border-radius: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: 1px solid;
+
+  &.status-approved { background: rgba(16,185,129,0.12); color: $success; border-color: rgba(16,185,129,0.3); }
+  &.status-pending  { background: rgba(245,158,11,0.12); color: $warning; border-color: rgba(245,158,11,0.3); }
+}
+
+.btn-approve {
+  @include primary-button;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.9rem;
+
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.approve-success {
+  color: $success;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.section-card {
+  @include glass-card;
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  @include text-primary;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid;
+
+  [data-theme='light'] & { border-bottom-color: rgba(0,0,0,0.08); }
+  [data-theme='dark'] & { border-bottom-color: rgba(255,255,255,0.08); }
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-label {
+  @include text-secondary;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  @include text-primary;
+  font-size: 0.95rem;
+}
+
+// Pay breakdown
+.pay-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.pay-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid;
+
+  [data-theme='light'] & { border-bottom-color: rgba(0,0,0,0.06); }
+  [data-theme='dark'] & { border-bottom-color: rgba(255,255,255,0.06); }
+
+  &:last-child { border-bottom: none; }
+
+  &.deduction .pay-label { @include text-secondary; }
+  &.net { padding-top: 1rem; margin-top: 0.5rem; border-top: 2px solid; border-bottom: none;
+    [data-theme='light'] & { border-top-color: rgba(0,0,0,0.12); }
+    [data-theme='dark'] & { border-top-color: rgba(255,255,255,0.12); }
+  }
+}
+
+.pay-label {
+  @include text-primary;
+  font-size: 0.95rem;
+}
+
+.pay-value {
+  @include text-primary;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.deduction-value { color: $error; }
+.net-value { font-size: 1.2rem; font-weight: 700; color: $success; }
+
+.footer-nav {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 1rem;
+}
+
+.btn-back {
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid;
+  background: transparent;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s;
+
+  [data-theme='light'] & { border-color: rgba(0,0,0,0.2); @include text-primary; }
+  [data-theme='dark'] & { border-color: rgba(255,255,255,0.2); @include text-primary; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

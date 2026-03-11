@@ -1,0 +1,96 @@
+<div class="payslip-container">
+
+  <div class="loading-container" *ngIf="isLoading">
+    <p class="loading-spinner">Loading payslip...</p>
+  </div>
+
+  <div class="error-banner" *ngIf="error && !isLoading">
+    <span class="error-icon">!</span>
+    <span>{{ error }}</span>
+  </div>
+
+  <ng-container *ngIf="payslip && !isLoading">
+    <div class="header">
+      <div>
+        <h1 class="title">Payslip #{{ payslip.id }}</h1>
+        <p class="subtitle">{{ payslip.employee_name }}</p>
+      </div>
+      <div class="header-right">
+        <span class="status-badge" [class]="getStatusClass(payslip.status)">
+          {{ payslip.status | titlecase }}
+        </span>
+        <button
+          class="btn-approve"
+          *ngIf="canApprove()"
+          (click)="approve()"
+          [disabled]="approving"
+        >
+          {{ approving ? 'Approving...' : 'Approve Payslip' }}
+        </button>
+        <div class="approve-success" *ngIf="approveSuccess">Payslip approved.</div>
+      </div>
+    </div>
+
+    <!-- Period -->
+    <div class="section-card" *ngIf="payslip.period_start || payslip.period_end">
+      <h3 class="section-title">Pay Period</h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="detail-label">Start</span>
+          <span class="detail-value">{{ formatDate(payslip.period_start) }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">End</span>
+          <span class="detail-value">{{ formatDate(payslip.period_end) }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Days Worked</span>
+          <span class="detail-value">{{ payslip.days_worked }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">Leave Days Taken</span>
+          <span class="detail-value">{{ payslip.leave_days_taken }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financials -->
+    <div class="section-card">
+      <h3 class="section-title">Pay Breakdown</h3>
+      <div class="pay-rows">
+        <div class="pay-row">
+          <span class="pay-label">Gross Pay</span>
+          <span class="pay-value">{{ formatCurrency(payslip.gross_pay) }}</span>
+        </div>
+        <div class="pay-row deduction">
+          <span class="pay-label">Leave Deduction</span>
+          <span class="pay-value deduction-value">- {{ formatCurrency(payslip.deductions_leave) }}</span>
+        </div>
+        <div class="pay-row deduction">
+          <span class="pay-label">Tax Deduction</span>
+          <span class="pay-value deduction-value">- {{ formatCurrency(payslip.deductions_tax) }}</span>
+        </div>
+        <div class="pay-row net">
+          <span class="pay-label">Net Pay</span>
+          <span class="pay-value net-value">{{ formatCurrency(payslip.net_pay) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LLM Reasoning -->
+    <div class="section-card">
+      <h3 class="section-title">AI Assessment</h3>
+      <app-llm-reasoning-display
+        [decision]="getDisplayDecision(payslip.llm_decision)"
+        [reasoning]="payslip.llm_reasoning || ''"
+        [confidence]="0"
+        [factors]="[]"
+        [recommendations]="[]"
+      ></app-llm-reasoning-display>
+    </div>
+
+    <div class="footer-nav">
+      <a routerLink="/payroll/history" class="btn-back">Back to History</a>
+    </div>
+  </ng-container>
+</div>

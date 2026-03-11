@@ -54,6 +54,22 @@
       </ul>
     </div>
 
+    <!-- Payroll -->
+    <div class="nav-section">
+      <h3>Payroll</h3>
+      <ul class="nav-links">
+        <li *ngIf="user.role === 'hr' || user.role === 'admin'">
+          <a routerLink="/payroll/run">Run Pay Cycle</a>
+        </li>
+        <li *ngIf="user.role === 'hr' || user.role === 'admin'">
+          <a routerLink="/payroll/history">Payroll History</a>
+        </li>
+        <li *ngIf="user.role === 'employee' || user.role === 'manager'">
+          <a routerLink="/payroll/history">My Payslips</a>
+        </li>
+      </ul>
+    </div>
+
   </div>
 
   <div *ngIf="!user" class="loading">
