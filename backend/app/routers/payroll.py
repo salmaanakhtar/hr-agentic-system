@@ -111,6 +111,9 @@ async def run_pay_cycle(
     """
     _require_role(current_user, "hr", "admin")
 
+    # Cache user id before any DB commits to avoid greenlet/lazy-load issues
+    current_user_id = current_user.id
+
     # Validate dates
     try:
         period_start = date.fromisoformat(body.period_start)
@@ -126,7 +129,7 @@ async def run_pay_cycle(
         period_start=period_start,
         period_end=period_end,
         status=PayCycleStatus.RUNNING.value,
-        run_by=current_user.id,
+        run_by=current_user_id,
         run_at=datetime.utcnow(),
     )
     db.add(cycle)
@@ -136,7 +139,7 @@ async def run_pay_cycle(
     await db.commit()
 
     logger.info(
-        f"Pay cycle {cycle_id} created by user {current_user.id}: "
+        f"Pay cycle {cycle_id} created by user {current_user_id}: "
         f"{body.period_start} to {body.period_end}"
     )
 
@@ -170,7 +173,7 @@ async def run_pay_cycle(
                 pay_cycle_id=cycle_id,
                 period_start=body.period_start,
                 period_end=body.period_end,
-                run_by_user_id=current_user.id,
+                run_by_user_id=current_user_id,
             )
             output = await agent.execute(agent_input)
             results.append({
@@ -426,6 +429,7 @@ async def approve_payslip(
     HR/Admin only.
     """
     _require_role(current_user, "hr", "admin")
+    current_user_id = current_user.id
 
     result = await db.execute(select(Payslip).where(Payslip.id == payslip_id))
     payslip = result.scalar_one_or_none()
@@ -441,18 +445,18 @@ async def approve_payslip(
 
     payslip_id_cached = payslip.id
     payslip.status = PayslipStatus.APPROVED.value
-    payslip.approved_by = current_user.id
+    payslip.approved_by = current_user_id
     payslip.approved_at = datetime.utcnow()
     payslip.updated_at = datetime.utcnow()
     await db.commit()
 
-    logger.info(f"User {current_user.id} approved payslip {payslip_id_cached}")
+    logger.info(f"User {current_user_id} approved payslip {payslip_id_cached}")
 
     return {
         "message": "Payslip approved successfully",
         "payslip_id": payslip_id_cached,
         "status": PayslipStatus.APPROVED.value,
-        "approved_by": current_user.id,
+        "approved_by": current_user_id,
         "notes": body.notes,
     }
 

@@ -126,7 +126,7 @@
 
 .status-badge {
   padding: 0.25rem 0.75rem;
-  border-radius: $radius-full;
+  border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: capitalize;
@@ -189,7 +189,7 @@
 
 .skill-chip {
   padding: 0.2rem 0.6rem;
-  border-radius: $radius-full;
+  border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 500;
   background: rgba($primary, 0.08);
