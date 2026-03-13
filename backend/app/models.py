@@ -452,3 +452,50 @@ class Payslip(Base):
     employee = relationship("Employee", foreign_keys=[employee_id])
     pay_cycle = relationship("PayCycle", back_populates="payslips")
     approver = relationship("User", foreign_keys=[approved_by])
+
+
+# ---------------------------------------------------------------------------
+# Policy Compliance (Phase 7)
+# ---------------------------------------------------------------------------
+
+class PolicyCategory(str, Enum):
+    GENERAL = "general"
+    LEAVE = "leave"
+    EXPENSE = "expense"
+    HIRING = "hiring"
+    PAYROLL = "payroll"
+    CODE_OF_CONDUCT = "code_of_conduct"
+    SAFETY = "safety"
+    OTHER = "other"
+
+
+class PolicyDocument(Base):
+    __tablename__ = "policy_documents"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    title       = Column(String, nullable=False)
+    description = Column(Text, nullable=True)
+    category    = Column(String, nullable=False)          # PolicyCategory value
+    filename    = Column(String, nullable=False)          # UUID filename on disk
+    file_path   = Column(String, nullable=False)          # absolute path
+    uploaded_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at  = Column(DateTime, default=datetime.utcnow)
+    is_active   = Column(Boolean, default=True)
+
+    chunks   = relationship("PolicyChunk", back_populates="document",
+                            cascade="all, delete-orphan")
+    uploader = relationship("User", foreign_keys=[uploaded_by])
+
+
+class PolicyChunk(Base):
+    __tablename__ = "policy_chunks"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    document_id = Column(Integer, ForeignKey("policy_documents.id", ondelete="CASCADE"),
+                         nullable=False)
+    content     = Column(Text, nullable=False)
+    chunk_index = Column(Integer, nullable=False)         # order within document
+    embedding   = Column(Vector(1536), nullable=True)     # OpenAI text-embedding-3-small
+    token_count = Column(Integer, nullable=True)
+
+    document = relationship("PolicyDocument", back_populates="chunks")
