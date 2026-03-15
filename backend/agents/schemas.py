@@ -298,3 +298,39 @@ class PayCycleCreate(BaseModel):
 
 class PayslipApprove(BaseModel):
     notes: Optional[str] = None
+
+
+# ---------------------------------------------------------------------------
+# Policy Compliance Schemas (Phase 7.3)
+# ---------------------------------------------------------------------------
+
+class PolicyQueryInput(BaseModel):
+    user_id: int
+    question: str
+
+
+class PolicyQueryOutput(BaseModel):
+    success: bool
+    message: str
+    reasoning: str
+    answer: str
+    citations: List[Dict[str, Any]] = Field(default_factory=list)
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    sources: List[str] = Field(default_factory=list)
+
+
+class ComplianceCheckInput(BaseModel):
+    user_id: int
+    scenario: str
+    context: Optional[Dict[str, Any]] = None
+
+
+class ComplianceCheckOutput(BaseModel):
+    success: bool
+    message: str
+    reasoning: str
+    decision: str   # COMPLIANT | NON_COMPLIANT | UNCLEAR
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    citations: List[Dict[str, Any]] = Field(default_factory=list)
+    policy_references: List[str] = Field(default_factory=list)
+    recommendations: List[str] = Field(default_factory=list)

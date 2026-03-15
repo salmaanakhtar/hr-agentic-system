@@ -11,6 +11,7 @@ from agents.leave_agent import LeaveAgent
 from agents.expense_agent import ExpenseAgent
 from agents.hiring_agent import HiringAgent
 from agents.payroll_agent import PayrollAgent
+from agents.policy_agent import PolicyComplianceAgent
 from agents.orchestrator import OrchestratorAgent
 import logging
 
@@ -42,6 +43,9 @@ def register_all_agents():
 
     registry.register(PayrollAgent())
     logger.info("Registered: PayrollAgent")
+
+    registry.register(PolicyComplianceAgent())
+    logger.info("Registered: PolicyComplianceAgent")
 
     # Register orchestrator
     registry.register(OrchestratorAgent())
