@@ -113,14 +113,16 @@ app.add_middleware(
 _uploads_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
 os.makedirs(os.path.join(_uploads_dir, "receipts"), exist_ok=True)
 os.makedirs(os.path.join(_uploads_dir, "cvs"), exist_ok=True)
+os.makedirs(os.path.join(_uploads_dir, "policies"), exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=_uploads_dir), name="uploads")
 
 # Include routers
-from app.routers import leave, expenses, hiring, payroll
+from app.routers import leave, expenses, hiring, payroll, policies
 app.include_router(leave.router)
 app.include_router(expenses.router)
 app.include_router(hiring.router)
 app.include_router(payroll.router)
+app.include_router(policies.router)
 
 @app.on_event("startup")
 def startup_event():
