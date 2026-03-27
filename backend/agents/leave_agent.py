@@ -63,6 +63,15 @@ class BusinessRulesInput(BaseModelV1):
     days_requested: int = Field(description="Number of days being requested")
 
 
+class QueryPolicyInput(BaseModelV1):
+    """Input schema for policy lookup tool."""
+    question: str = Field(description="The leave policy question to look up, e.g. 'What is the maximum consecutive leave period allowed?'")
+    category: Optional[str] = Field(
+        default=None,
+        description="Optional policy category filter: general, leave, expense, hiring, payroll, code_of_conduct, safety, other"
+    )
+
+
 class LeaveAgent(Agent[LeaveRequestInput, LeaveValidationOutput]):
     """
     LangChain-powered agent for leave request validation and approval.
@@ -112,7 +121,20 @@ class LeaveAgent(Agent[LeaveRequestInput, LeaveValidationOutput]):
                 description="Validate leave request against company business rules including minimum notice period (3 days) and maximum consecutive days (14 days). Returns violations and warnings.",
                 args_schema=BusinessRulesInput,
                 return_direct=False
-            )
+            ),
+            StructuredTool.from_function(
+                coroutine=self._tool_query_policy,
+                name="query_policy",
+                description=(
+                    "Look up HR leave policy rules from uploaded policy documents using semantic search. "
+                    "Returns a grounded answer with a confidence score. "
+                    "If confidence > 0.5, use the returned rules to inform your decision. "
+                    "If confidence <= 0.5 or no policy documents exist, fall back to the hardcoded criteria. "
+                    "Call this first to check for any policy overrides."
+                ),
+                args_schema=QueryPolicyInput,
+                return_direct=False,
+            ),
         ]
 
         # System prompt with clear instructions
@@ -124,14 +146,16 @@ TOOLS AVAILABLE:
 1. check_leave_balance - Verify employee has sufficient leave days remaining
 2. detect_conflicts - Find overlapping leave requests or blackout periods
 3. validate_business_rules - Check notice period and consecutive day limits
+4. query_policy - Look up HR leave policy rules from uploaded policy documents (if confidence > 0.5, those rules take precedence; otherwise use the hardcoded criteria below)
 
 DECISION PROCESS:
-1. Use ALL available tools to gather complete information
-2. Analyze the data considering company policies
-3. Make a clear decision: auto-approve, escalate to manager, or reject
-4. Provide detailed reasoning for your decision
+1. Call query_policy with a relevant leave policy question to check for uploaded policy overrides
+2. Use ALL other available tools to gather complete information
+3. Analyze the data; if query_policy returned confidence > 0.5, apply those policy rules; otherwise apply the hardcoded criteria below
+4. Make a clear decision: auto-approve, escalate to manager, or reject
+5. Provide detailed reasoning for your decision
 
-AUTO-APPROVAL CRITERIA (all must be met):
+AUTO-APPROVAL CRITERIA (hardcoded fallback — all must be met):
 - Request is 3 days or less
 - Employee has sufficient leave balance remaining
 - No conflicts with existing approved leave
@@ -158,7 +182,7 @@ RECOMMENDATIONS: [specific recommendations for manager if escalating, or next st
 
 Be thorough, use all tools, and provide clear reasoning for every decision."""
 
-        # Bind tools to LLM (newer LangChain pattern)
+        # Bind tools to LLM
         self.llm_with_tools = self.llm.bind_tools(self.tools)
 
         # Create tool map for easy lookup
@@ -166,7 +190,7 @@ Be thorough, use all tools, and provide clear reasoning for every decision."""
 
         self.logger.info("Leave Agent initialized with LangChain + GPT-4o-mini")
 
-    async def _run_agent_loop(self, user_input: str, max_iterations: int = 5) -> tuple[str, list]:
+    async def _run_agent_loop(self, user_input: str, max_iterations: int = 6) -> tuple[str, list]:
         """Run the agent loop with tool calling (newer LangChain pattern)."""
         messages = [
             {"role": "system", "content": self.system_prompt},
@@ -517,6 +541,40 @@ Then make your decision following the decision criteria in your instructions.
                       (f"CONFLICTS: {', '.join(conflicts)}" if conflicts else "No blocking conflicts.") +
                       (f" WARNINGS: {', '.join(warnings)}" if warnings else "")
         })
+
+    async def _tool_query_policy(self, question: str, category: Optional[str] = None) -> str:
+        """Query the Policy Compliance Agent for HR leave policy information."""
+        try:
+            from agents.policy_agent import PolicyComplianceAgent
+            from agents.schemas import PolicyQueryInput
+
+            policy_agent = PolicyComplianceAgent()
+            result = await policy_agent.query(PolicyQueryInput(user_id=0, question=question))
+
+            return json.dumps({
+                "success": result.success,
+                "answer": result.answer,
+                "confidence": result.confidence,
+                "sources": result.sources,
+                "policy_found": result.confidence > 0.5,
+                "message": (
+                    f"Policy lookup (confidence: {result.confidence:.2f}): {result.answer[:400]}"
+                    + (
+                        " [RELIABLE - apply these policy rules]"
+                        if result.confidence > 0.5
+                        else " [LOW CONFIDENCE - fall back to hardcoded rules]"
+                    )
+                ),
+            })
+        except Exception as e:
+            self.logger.error(f"query_policy tool error: {e}")
+            return json.dumps({
+                "success": False,
+                "error": str(e),
+                "policy_found": False,
+                "confidence": 0.0,
+                "message": f"Policy lookup failed: {str(e)}. Use hardcoded rules instead.",
+            })
 
     async def _tool_validate_business_rules(self, start_date: str, end_date: str, days_requested: int) -> str:
         """

@@ -62,6 +62,14 @@ class CheckMonthlySpendInput(BaseModelV1):
     category: str = Field(description="Expense category to sum monthly approved totals for")
 
 
+class QueryPolicyInput(BaseModelV1):
+    question: str = Field(description="The expense policy question to look up, e.g. 'What is the meal expense limit?'")
+    category: Optional[str] = Field(
+        default=None,
+        description="Optional policy category filter: general, leave, expense, hiring, payroll, code_of_conduct, safety, other"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Expense Agent
 # ---------------------------------------------------------------------------
@@ -132,6 +140,19 @@ class ExpenseAgent(Agent[ExpenseSubmitInput, ExpenseValidationOutput]):
                 args_schema=CheckMonthlySpendInput,
                 return_direct=False,
             ),
+            StructuredTool.from_function(
+                coroutine=self._tool_query_policy,
+                name="query_policy",
+                description=(
+                    "Look up HR expense policy rules from uploaded policy documents using semantic search. "
+                    "Returns a grounded answer with a confidence score. "
+                    "If confidence > 0.5, use the returned policy limits to inform your decision instead of the hardcoded thresholds. "
+                    "If confidence <= 0.5 or no policy documents exist, fall back to the hardcoded expense policy rules. "
+                    "Call this before check_policy_limits to check for uploaded policy overrides."
+                ),
+                args_schema=QueryPolicyInput,
+                return_direct=False,
+            ),
         ]
 
         self.system_prompt = """You are an Expense Claim Validation Agent for an HR management system.
@@ -144,15 +165,18 @@ TOOLS AVAILABLE:
 2. check_policy_limits   - Check amount against category policy limits
 3. detect_duplicates     - Check for duplicate expense submissions within 7 days
 4. check_monthly_spend   - Check how much the employee has spent this month in this category
+5. query_policy          - Look up HR expense policy rules from uploaded policy documents (if confidence > 0.5, those limits override the hardcoded thresholds below)
 
 DECISION PROCESS:
-1. If a receipt was uploaded, ALWAYS call validate_receipt_ocr first
-2. Call check_policy_limits to verify the amount is within policy
-3. Call detect_duplicates to check for potential fraud
-4. Call check_monthly_spend to check for excessive spending patterns
-5. Analyze all results and make a clear final decision
+1. Call query_policy with an expense policy question relevant to this category to check for uploaded policy overrides
+2. If a receipt was uploaded, ALWAYS call validate_receipt_ocr
+3. Call check_policy_limits to verify the amount is within policy
+4. Call detect_duplicates to check for potential fraud
+5. Call check_monthly_spend to check for excessive spending patterns
+6. Analyze all results; if query_policy returned confidence > 0.5, apply those policy limits; otherwise apply the hardcoded thresholds below
+7. Make a clear final decision
 
-EXPENSE POLICIES (hardcoded until Policy Agent is built in Phase 7):
+EXPENSE POLICIES (hardcoded fallback — used when query_policy confidence <= 0.5):
 - meals:           auto-approve <= $25,  escalate $25-$50,   reject > $50
 - travel:          auto-approve <= $100, escalate $100-$200, reject > $200
 - equipment:       auto-approve <= $200, escalate $200-$500, reject > $500
@@ -198,7 +222,7 @@ Be thorough, call all relevant tools, and provide clear reasoning for every deci
     # Agent Loop (identical pattern to LeaveAgent)
     # -------------------------------------------------------------------------
 
-    async def _run_agent_loop(self, user_input: str, max_iterations: int = 6) -> tuple[str, list]:
+    async def _run_agent_loop(self, user_input: str, max_iterations: int = 7) -> tuple[str, list]:
         """Run the LangChain tool-calling agent loop."""
         messages = [
             {"role": "system", "content": self.system_prompt},
@@ -425,6 +449,40 @@ Then make your final decision following the criteria in your instructions.
     # -------------------------------------------------------------------------
     # LangChain Tool Functions (called autonomously by the LLM)
     # -------------------------------------------------------------------------
+
+    async def _tool_query_policy(self, question: str, category: Optional[str] = None) -> str:
+        """Query the Policy Compliance Agent for HR expense policy information."""
+        try:
+            from agents.policy_agent import PolicyComplianceAgent
+            from agents.schemas import PolicyQueryInput
+
+            policy_agent = PolicyComplianceAgent()
+            result = await policy_agent.query(PolicyQueryInput(user_id=0, question=question))
+
+            return json.dumps({
+                "success": result.success,
+                "answer": result.answer,
+                "confidence": result.confidence,
+                "sources": result.sources,
+                "policy_found": result.confidence > 0.5,
+                "message": (
+                    f"Policy lookup (confidence: {result.confidence:.2f}): {result.answer[:400]}"
+                    + (
+                        " [RELIABLE - apply these policy rules instead of hardcoded thresholds]"
+                        if result.confidence > 0.5
+                        else " [LOW CONFIDENCE - fall back to hardcoded expense policy thresholds]"
+                    )
+                ),
+            })
+        except Exception as e:
+            self.logger.error(f"query_policy tool error: {e}")
+            return json.dumps({
+                "success": False,
+                "error": str(e),
+                "policy_found": False,
+                "confidence": 0.0,
+                "message": f"Policy lookup failed: {str(e)}. Use hardcoded expense policy thresholds instead.",
+            })
 
     async def _tool_validate_receipt_ocr(
         self,

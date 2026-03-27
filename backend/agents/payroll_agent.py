@@ -72,6 +72,14 @@ class GeneratePayslipInput(BaseModelV1):
     leave_days_taken: float = Field(description="Total approved leave days falling within the period")
 
 
+class QueryPolicyInput(BaseModelV1):
+    question: str = Field(description="The payroll policy question to look up, e.g. 'What are the payroll deduction rules?'")
+    category: Optional[str] = Field(
+        default=None,
+        description="Optional policy category filter: general, leave, expense, hiring, payroll, code_of_conduct, safety, other"
+    )
+
+
 # ---------------------------------------------------------------------------
 # Payroll Agent
 # ---------------------------------------------------------------------------
@@ -163,6 +171,19 @@ class PayrollAgent(Agent[PayrollRunInput, PayrollRunOutput]):
                 args_schema=GeneratePayslipInput,
                 return_direct=False,
             ),
+            StructuredTool.from_function(
+                coroutine=self._tool_query_policy,
+                name="query_policy",
+                description=(
+                    "Look up HR payroll policy rules from uploaded policy documents using semantic search. "
+                    "Returns a grounded answer with a confidence score. "
+                    "If confidence > 0.5, use the returned rules to inform your payroll decision. "
+                    "If confidence <= 0.5 or no policy documents exist, fall back to the hardcoded rules. "
+                    "Call this before starting the calculation to check for policy overrides."
+                ),
+                args_schema=QueryPolicyInput,
+                return_direct=False,
+            ),
         ]
 
         self.system_prompt = """You are a Payroll Agent for an HR management system.
@@ -176,15 +197,18 @@ TOOLS AVAILABLE:
 3. apply_leave_deductions     - Compute unpaid leave deductions (leave beyond balance only)
 4. calculate_tax              - Apply flat tax rate to taxable pay
 5. generate_payslip           - Assemble and save the final payslip to the database
+6. query_policy               - Look up HR payroll policy rules from uploaded policy documents (if confidence > 0.5, those rules take precedence; otherwise use the hardcoded rules below)
 
 CALCULATION PROCESS:
-1. Call get_employee_payroll_info to confirm salary data and get monthly_gross (base_salary / 12)
-2. Call get_approved_leave to find all approved leave within the period
-3. Call apply_leave_deductions with monthly_gross to compute unpaid deduction amount
-4. Call calculate_tax with taxable_amount = gross_pay - deductions_leave
-5. Call generate_payslip with all computed values to save the payslip
+1. Optionally call query_policy with a payroll policy question to check for uploaded policy overrides
+2. Call get_employee_payroll_info to confirm salary data and get monthly_gross (base_salary / 12)
+3. Call get_approved_leave to find all approved leave within the period
+4. Call apply_leave_deductions with monthly_gross to compute unpaid deduction amount
+5. Call calculate_tax with taxable_amount = gross_pay - deductions_leave
+6. Call generate_payslip with all computed values to save the payslip
+7. If query_policy returned confidence > 0.5, apply those policy rules in your final decision
 
-KEY RULES:
+KEY RULES (hardcoded fallback — used when query_policy confidence <= 0.5):
 - gross_pay = base_salary / 12  (full monthly amount, paid leave does not reduce this)
 - deductions_leave = unpaid portion only (days exceeding remaining balance * daily_rate)
 - deductions_tax = taxable_amount * tax_rate (flat rate)
@@ -214,7 +238,7 @@ Be systematic, call all tools in order, and document the complete calculation.""
     # Agent Loop
     # -------------------------------------------------------------------------
 
-    async def _run_agent_loop(self, user_input: str, max_iterations: int = 7) -> tuple[str, list]:
+    async def _run_agent_loop(self, user_input: str, max_iterations: int = 8) -> tuple[str, list]:
         """Run the LangChain tool-calling agent loop."""
         messages = [
             {"role": "system", "content": self.system_prompt},
@@ -787,6 +811,40 @@ Then make your APPROVE/HOLD/FLAG decision.
                 "success": False,
                 "error": str(e),
                 "message": f"Payslip generation failed: {str(e)}",
+            })
+
+    async def _tool_query_policy(self, question: str, category: Optional[str] = None) -> str:
+        """Query the Policy Compliance Agent for HR payroll policy information."""
+        try:
+            from agents.policy_agent import PolicyComplianceAgent
+            from agents.schemas import PolicyQueryInput
+
+            policy_agent = PolicyComplianceAgent()
+            result = await policy_agent.query(PolicyQueryInput(user_id=0, question=question))
+
+            return json.dumps({
+                "success": result.success,
+                "answer": result.answer,
+                "confidence": result.confidence,
+                "sources": result.sources,
+                "policy_found": result.confidence > 0.5,
+                "message": (
+                    f"Policy lookup (confidence: {result.confidence:.2f}): {result.answer[:400]}"
+                    + (
+                        " [RELIABLE - apply these payroll policy rules]"
+                        if result.confidence > 0.5
+                        else " [LOW CONFIDENCE - fall back to hardcoded payroll rules]"
+                    )
+                ),
+            })
+        except Exception as e:
+            self.logger.error(f"query_policy tool error: {e}")
+            return json.dumps({
+                "success": False,
+                "error": str(e),
+                "policy_found": False,
+                "confidence": 0.0,
+                "message": f"Policy lookup failed: {str(e)}. Use hardcoded payroll rules instead.",
             })
 
     # -------------------------------------------------------------------------
