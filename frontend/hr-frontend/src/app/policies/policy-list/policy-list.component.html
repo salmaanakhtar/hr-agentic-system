@@ -1,0 +1,67 @@
+<div class="policy-list-container">
+
+  <div class="header">
+    <div>
+      <h1 class="title">Policy Documents</h1>
+      <p class="subtitle">Browse and manage HR policy documents</p>
+    </div>
+    <div class="header-actions">
+      <a *ngIf="canManage()" routerLink="/policies/upload" class="btn-upload">Upload Policy</a>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-card">
+    <label class="filter-label">Category</label>
+    <select class="filter-select" [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
+      <option value="">All Categories</option>
+      <option *ngFor="let cat of categories" [value]="cat">{{ categoryLabel(cat) }}</option>
+    </select>
+  </div>
+
+  <!-- Error -->
+  <div class="error-banner" *ngIf="error || deleteError">
+    <span class="error-icon">!</span>
+    <span>{{ error || deleteError }}</span>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="isLoading">
+    <p class="loading-spinner">Loading documents...</p>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!isLoading && !error && documents.length === 0">
+    <p>No policy documents found.</p>
+    <a *ngIf="canManage()" routerLink="/policies/upload" class="btn-upload-empty">Upload your first policy</a>
+  </div>
+
+  <!-- Document cards -->
+  <div class="documents-grid" *ngIf="!isLoading && documents.length > 0">
+    <div class="document-card" *ngFor="let doc of documents">
+      <div class="doc-header">
+        <span class="category-badge cat-{{ doc.category }}">{{ categoryLabel(doc.category) }}</span>
+        <span class="chunk-count">{{ doc.chunk_count }} chunks</span>
+      </div>
+      <h3 class="doc-title">{{ doc.title }}</h3>
+      <p class="doc-description" *ngIf="doc.description">{{ doc.description }}</p>
+      <p class="doc-date">Uploaded {{ formatDate(doc.created_at) }}</p>
+      <div class="doc-actions" *ngIf="canManage()">
+        <button
+          class="btn-delete"
+          (click)="delete(doc)"
+          [disabled]="deletingId === doc.id"
+        >
+          {{ deletingId === doc.id ? 'Deactivating...' : 'Deactivate' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick nav -->
+  <div class="quick-nav">
+    <a routerLink="/policies/query" class="nav-link">Ask a Policy Question</a>
+    <a routerLink="/policies/compliance" class="nav-link">Check Compliance</a>
+  </div>
+
+</div>

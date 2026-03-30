@@ -1,0 +1,222 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+.policy-list-container {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.title {
+  @include text-primary;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem 0;
+  background: linear-gradient(135deg, $primary, $primary-light);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  @include text-secondary;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.btn-upload {
+  @include primary-button;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.9rem;
+}
+
+.filters-card {
+  @include glass-card;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1.25rem;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  @include text-secondary;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.filter-select {
+  @include glass-input;
+  min-width: 180px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.error-banner {
+  @include glass-card;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: $error;
+  margin-bottom: 1rem;
+}
+
+.error-icon { font-weight: 700; }
+
+.loading-container {
+  @include glass-card;
+  text-align: center;
+  padding: 3rem;
+}
+
+.loading-spinner {
+  @include text-secondary;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.empty-state {
+  @include glass-card;
+  text-align: center;
+  padding: 3rem;
+
+  p { @include text-secondary; margin: 0 0 1rem 0; }
+}
+
+.btn-upload-empty {
+  @include primary-button;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.9rem;
+}
+
+.documents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.document-card {
+  @include glass-card;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.doc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid;
+
+  &.cat-general  { background: rgba(99,102,241,0.12); color: $primary; border-color: rgba(99,102,241,0.3); }
+  &.cat-leave    { background: rgba(16,185,129,0.12); color: $success; border-color: rgba(16,185,129,0.3); }
+  &.cat-expense  { background: rgba(245,158,11,0.12); color: $warning; border-color: rgba(245,158,11,0.3); }
+  &.cat-hiring   { background: rgba(59,130,246,0.12); color: #3b82f6;  border-color: rgba(59,130,246,0.3); }
+  &.cat-payroll  { background: rgba(139,92,246,0.12); color: #8b5cf6;  border-color: rgba(139,92,246,0.3); }
+}
+
+.chunk-count {
+  @include text-secondary;
+  font-size: 0.78rem;
+}
+
+.doc-title {
+  @include text-primary;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.doc-description {
+  @include text-secondary;
+  font-size: 0.88rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.doc-date {
+  @include text-secondary;
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+.doc-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-delete {
+  padding: 0.35rem 0.85rem;
+  border-radius: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.08);
+  color: $error;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) { background: rgba(239, 68, 68, 0.18); }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.quick-nav {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.nav-link {
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s;
+
+  [data-theme='light'] & { border-color: rgba(0,0,0,0.2); @include text-primary; }
+  [data-theme='dark'] & { border-color: rgba(255,255,255,0.2); @include text-primary; }
+
+  &:hover { border-color: $primary; color: $primary; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

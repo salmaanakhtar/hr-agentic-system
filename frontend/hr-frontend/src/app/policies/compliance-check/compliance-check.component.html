@@ -1,0 +1,105 @@
+<div class="compliance-container">
+
+  <div class="header">
+    <h1 class="title">Compliance Check</h1>
+    <p class="subtitle">Describe a scenario and the AI will assess whether it complies with HR policies</p>
+  </div>
+
+  <!-- Form -->
+  <div class="form-card">
+    <div class="form-group">
+      <label class="form-label">Scenario *</label>
+      <textarea
+        class="form-input"
+        [(ngModel)]="scenario"
+        placeholder="e.g. An employee submitted a £650 expense claim for a team dinner. The company expense policy allows up to £500 per event. The employee argues it was a client entertainment event."
+        rows="4"
+        [disabled]="isLoading"
+      ></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn-reset" *ngIf="result" (click)="reset()" [disabled]="isLoading">New Check</button>
+      <button
+        class="btn-submit"
+        (click)="submit()"
+        [disabled]="!scenario.trim() || isLoading"
+      >
+        {{ isLoading ? 'Checking compliance...' : 'Check Compliance' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-card" *ngIf="isLoading">
+    <p class="loading-text">Analysing scenario against policy documents...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-banner" *ngIf="error && !isLoading">
+    <span class="error-icon">!</span>
+    <span>{{ error }}</span>
+  </div>
+
+  <!-- Result -->
+  <ng-container *ngIf="result && !isLoading">
+
+    <!-- Decision summary -->
+    <div class="decision-card">
+      <div class="decision-row">
+        <span class="decision-badge" [class]="decisionClass(result.decision)">
+          {{ decisionLabel(result.decision) }}
+        </span>
+        <div class="confidence-wrap">
+          <span class="confidence-label">Confidence {{ confidencePercent() }}%</span>
+        </div>
+      </div>
+      <p class="decision-message">{{ result.message }}</p>
+    </div>
+
+    <!-- LLM Reasoning Display -->
+    <div class="result-card">
+      <h3 class="section-title">AI Assessment</h3>
+      <app-llm-reasoning-display
+        [decision]="getDisplayDecision(result.decision)"
+        [reasoning]="result.reasoning"
+        [confidence]="result.confidence"
+        [factors]="result.policy_references"
+        [recommendations]="result.recommendations"
+      ></app-llm-reasoning-display>
+    </div>
+
+    <!-- Policy references -->
+    <div class="result-card" *ngIf="result.policy_references && result.policy_references.length > 0">
+      <h3 class="section-title">Policy References</h3>
+      <ul class="ref-list">
+        <li *ngFor="let ref of result.policy_references" class="ref-item">{{ ref }}</li>
+      </ul>
+    </div>
+
+    <!-- Citations -->
+    <div class="result-card" *ngIf="result.citations && result.citations.length > 0">
+      <h3 class="section-title">Policy Excerpts</h3>
+      <div class="citations-list">
+        <div class="citation-item" *ngFor="let c of result.citations">
+          <p class="citation-doc" *ngIf="c.document_title">{{ c.document_title }}</p>
+          <p class="citation-text" *ngIf="c.chunk_content">{{ c.chunk_content }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="result-card" *ngIf="result.recommendations && result.recommendations.length > 0">
+      <h3 class="section-title">Recommendations</h3>
+      <ul class="rec-list">
+        <li *ngFor="let rec of result.recommendations" class="rec-item">{{ rec }}</li>
+      </ul>
+    </div>
+
+  </ng-container>
+
+  <div class="footer-nav">
+    <a routerLink="/policies/documents" class="nav-link">Policy Documents</a>
+    <a routerLink="/policies/query" class="nav-link">Ask a Question</a>
+  </div>
+
+</div>

@@ -19,6 +19,10 @@ import { InterviewScheduleComponent } from './hiring/interview-schedule/intervie
 import { PayCycleRunComponent } from './payroll/pay-cycle-run/pay-cycle-run.component';
 import { PayrollHistoryComponent } from './payroll/payroll-history/payroll-history.component';
 import { PayslipComponent } from './payroll/payslip/payslip.component';
+import { PolicyListComponent } from './policies/policy-list/policy-list.component';
+import { PolicyUploadComponent } from './policies/policy-upload/policy-upload.component';
+import { PolicyQueryComponent } from './policies/policy-query/policy-query.component';
+import { ComplianceCheckComponent } from './policies/compliance-check/compliance-check.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -51,6 +55,12 @@ export const routes: Routes = [
   { path: 'payroll/run', component: PayCycleRunComponent },
   { path: 'payroll/history', component: PayrollHistoryComponent },
   { path: 'payroll/payslips/:id', component: PayslipComponent },
+
+  // Policy Routes
+  { path: 'policies/documents', component: PolicyListComponent },
+  { path: 'policies/upload', component: PolicyUploadComponent },
+  { path: 'policies/query', component: PolicyQueryComponent },
+  { path: 'policies/compliance', component: ComplianceCheckComponent },
 
   { path: '**', redirectTo: '/login' }
 ];

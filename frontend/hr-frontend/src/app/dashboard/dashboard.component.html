@@ -70,6 +70,19 @@
       </ul>
     </div>
 
+    <!-- Policy Compliance -->
+    <div class="nav-section">
+      <h3>Policy Compliance</h3>
+      <ul class="nav-links">
+        <li><a routerLink="/policies/documents">Policy Documents</a></li>
+        <li *ngIf="user.role === 'hr' || user.role === 'admin'">
+          <a routerLink="/policies/upload">Upload Policy</a>
+        </li>
+        <li><a routerLink="/policies/query">Ask a Policy Question</a></li>
+        <li><a routerLink="/policies/compliance">Check Compliance</a></li>
+      </ul>
+    </div>
+
   </div>
 
   <div *ngIf="!user" class="loading">

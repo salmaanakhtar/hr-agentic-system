@@ -1,0 +1,97 @@
+<div class="query-container">
+
+  <div class="header">
+    <h1 class="title">Policy Q&A</h1>
+    <p class="subtitle">Ask any HR policy question — the AI searches indexed policy documents and provides a grounded answer</p>
+  </div>
+
+  <!-- Question form -->
+  <div class="form-card">
+    <div class="form-group">
+      <label class="form-label">Your Question</label>
+      <textarea
+        class="form-input"
+        [(ngModel)]="question"
+        placeholder="e.g. How many days of annual leave am I entitled to? What is the expense reimbursement limit for travel?"
+        rows="3"
+        [disabled]="isLoading"
+      ></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn-reset" *ngIf="result" (click)="reset()" [disabled]="isLoading">New Question</button>
+      <button
+        class="btn-submit"
+        (click)="submit()"
+        [disabled]="!question.trim() || isLoading"
+      >
+        {{ isLoading ? 'Searching policies...' : 'Ask Question' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-card" *ngIf="isLoading">
+    <p class="loading-text">Searching policy documents...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="error-banner" *ngIf="error && !isLoading">
+    <span class="error-icon">!</span>
+    <span>{{ error }}</span>
+  </div>
+
+  <!-- Result -->
+  <ng-container *ngIf="result && !isLoading">
+
+    <!-- Answer -->
+    <div class="result-card">
+      <div class="result-header">
+        <h3 class="section-title">Answer</h3>
+        <div class="confidence-wrap">
+          <span class="confidence-label">Confidence</span>
+          <div class="confidence-bar-bg">
+            <div
+              class="confidence-bar-fill"
+              [class]="confidenceClass()"
+              [style.width.%]="confidencePercent()"
+            ></div>
+          </div>
+          <span class="confidence-pct" [class]="confidenceClass()">{{ confidencePercent() }}%</span>
+        </div>
+      </div>
+      <p class="answer-text">{{ result.answer }}</p>
+    </div>
+
+    <!-- Sources / Citations -->
+    <div class="result-card" *ngIf="result.sources && result.sources.length > 0">
+      <h3 class="section-title">Sources</h3>
+      <ul class="sources-list">
+        <li *ngFor="let src of result.sources" class="source-item">{{ src }}</li>
+      </ul>
+    </div>
+
+    <!-- Citations detail -->
+    <div class="result-card" *ngIf="result.citations && result.citations.length > 0">
+      <h3 class="section-title">Policy Excerpts</h3>
+      <div class="citations-list">
+        <div class="citation-item" *ngFor="let c of result.citations">
+          <p class="citation-doc" *ngIf="c.document_title">{{ c.document_title }}</p>
+          <p class="citation-text" *ngIf="c.chunk_content">{{ c.chunk_content }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reasoning -->
+    <div class="result-card reasoning-card">
+      <h3 class="section-title">AI Reasoning</h3>
+      <p class="reasoning-text">{{ result.reasoning }}</p>
+    </div>
+
+  </ng-container>
+
+  <div class="footer-nav">
+    <a routerLink="/policies/documents" class="nav-link">Policy Documents</a>
+    <a routerLink="/policies/compliance" class="nav-link">Check Compliance</a>
+  </div>
+
+</div>

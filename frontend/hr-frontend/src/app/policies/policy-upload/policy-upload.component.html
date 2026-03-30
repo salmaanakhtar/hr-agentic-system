@@ -1,0 +1,100 @@
+<div class="upload-container">
+
+  <div class="header">
+    <h1 class="title">Upload Policy Document</h1>
+    <p class="subtitle">PDF documents are automatically parsed, chunked, and embedded for AI search</p>
+  </div>
+
+  <!-- Success state -->
+  <div class="success-card" *ngIf="successResult">
+    <div class="success-icon-wrap">
+      <span class="success-icon">✓</span>
+    </div>
+    <h2 class="success-title">Policy uploaded successfully</h2>
+    <p class="success-detail">"{{ successResult.title }}" — {{ successResult.chunk_count }} chunks indexed</p>
+    <div class="success-actions">
+      <button class="btn-secondary" (click)="uploadAnother()">Upload Another</button>
+      <a routerLink="/policies/documents" class="btn-primary-link">View Documents</a>
+    </div>
+  </div>
+
+  <!-- Upload form -->
+  <div class="form-card" *ngIf="!successResult">
+
+    <div class="error-banner" *ngIf="error">
+      <span class="error-icon">!</span>
+      <span>{{ error }}</span>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Title *</label>
+      <input
+        class="form-input"
+        type="text"
+        [(ngModel)]="title"
+        placeholder="e.g. Employee Expense Reimbursement Policy"
+        [disabled]="isUploading"
+      />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Category *</label>
+      <select class="form-input" [(ngModel)]="category" [disabled]="isUploading">
+        <option value="">Select a category</option>
+        <option *ngFor="let cat of categories" [value]="cat">{{ categoryLabel(cat) }}</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea
+        class="form-input form-textarea"
+        [(ngModel)]="description"
+        placeholder="Optional — brief summary of this policy document"
+        rows="2"
+        [disabled]="isUploading"
+      ></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">PDF File *</label>
+      <div
+        class="drop-zone"
+        (dragover)="onDragOver($event)"
+        (drop)="onDrop($event)"
+        [class.has-file]="selectedFile"
+      >
+        <input
+          type="file"
+          accept=".pdf"
+          id="pdf-input"
+          class="file-input-hidden"
+          (change)="onFileSelected($event)"
+          [disabled]="isUploading"
+        />
+        <label for="pdf-input" class="drop-zone-label">
+          <span class="drop-icon">PDF</span>
+          <span *ngIf="!selectedFile" class="drop-text">Drag and drop a PDF here, or click to browse</span>
+          <span *ngIf="selectedFile" class="drop-text file-selected">{{ selectedFile.name }}</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a routerLink="/policies/documents" class="btn-cancel">Cancel</a>
+      <button
+        class="btn-submit"
+        (click)="submit()"
+        [disabled]="!isValid() || isUploading"
+      >
+        {{ isUploading ? 'Uploading and indexing...' : 'Upload Policy' }}
+      </button>
+    </div>
+
+    <p class="upload-note" *ngIf="isUploading">
+      This may take 15–30 seconds — the document is being parsed and embedded.
+    </p>
+
+  </div>
+
+</div>
