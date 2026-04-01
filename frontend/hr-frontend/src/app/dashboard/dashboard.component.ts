@@ -1,12 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService, User } from '../auth.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -25,32 +25,19 @@ export class DashboardComponent implements OnInit {
     }
 
     this.user = this.authService.getCurrentUser();
-    if (!this.user) {
-      this.authService.currentUser$.subscribe(user => {
-        this.user = user;
-      });
-    }
-  }
-
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+    this.authService.currentUser$.subscribe(user => {
+      this.user = user;
+    });
   }
 
   getRoleMessage(): string {
     if (!this.user) return '';
-
     switch (this.user.role.toLowerCase()) {
-      case 'admin':
-        return 'Welcome Admin! You have full access to the HR system.';
-      case 'hr':
-        return 'Welcome HR Manager! Manage employees and processes.';
-      case 'manager':
-        return 'Welcome Manager! Oversee your team and projects.';
-      case 'employee':
-        return 'Welcome Employee! Access your HR information.';
-      default:
-        return `Hello ${this.user.role}!`;
+      case 'admin':   return 'Full system access — manage employees, payroll, and configurations.';
+      case 'hr':      return 'Manage leave, expenses, hiring pipelines, and payroll cycles.';
+      case 'manager': return 'Oversee your team — approve requests, review candidates, and track expenses.';
+      case 'employee': return 'Access your leave balances, expense claims, and payslips.';
+      default:        return `Logged in as ${this.user.role}.`;
     }
   }
 }

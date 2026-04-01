@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './login/login.component';
 import { SignupComponent } from './signup/signup.component';
+import { AppShellComponent } from './shared/app-shell/app-shell.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { LeaveRequestFormComponent } from './leave/leave-request-form/leave-request-form.component';
 import { LeaveHistoryComponent } from './leave/leave-history/leave-history.component';
@@ -28,39 +29,44 @@ export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
-  { path: 'dashboard', component: DashboardComponent },
+  {
+    path: '',
+    component: AppShellComponent,
+    children: [
+      { path: 'dashboard', component: DashboardComponent },
 
-  // Leave Management Routes
-  { path: 'leave/request', component: LeaveRequestFormComponent },
-  { path: 'leave/history', component: LeaveHistoryComponent },
-  { path: 'leave/balance', component: LeaveBalanceCardComponent },
-  { path: 'leave/approvals', component: PendingApprovalsComponent },
-  { path: 'leave/calendar', component: TeamCalendarComponent },
+      // Leave Management
+      { path: 'leave/request', component: LeaveRequestFormComponent },
+      { path: 'leave/history', component: LeaveHistoryComponent },
+      { path: 'leave/balance', component: LeaveBalanceCardComponent },
+      { path: 'leave/approvals', component: PendingApprovalsComponent },
+      { path: 'leave/calendar', component: TeamCalendarComponent },
 
-  // Expense Management Routes
-  { path: 'expenses/submit', component: ExpenseRequestFormComponent },
-  { path: 'expenses/history', component: ExpenseHistoryComponent },
-  { path: 'expenses/approvals', component: PendingExpenseApprovalsComponent },
+      // Expense Management
+      { path: 'expenses/submit', component: ExpenseRequestFormComponent },
+      { path: 'expenses/history', component: ExpenseHistoryComponent },
+      { path: 'expenses/approvals', component: PendingExpenseApprovalsComponent },
 
-  // Hiring Pipeline Routes
-  { path: 'hiring/jobs', component: JobListComponent },
-  { path: 'hiring/jobs/new', component: JobPostingFormComponent },
-  { path: 'hiring/jobs/:id/edit', component: JobPostingFormComponent },
-  { path: 'hiring/pipeline/:jobId', component: HiringPipelineComponent },
-  { path: 'hiring/candidates/upload', component: CandidateUploadComponent },
-  { path: 'hiring/candidates/:id', component: CandidateProfileComponent },
-  { path: 'hiring/interview/:applicationId', component: InterviewScheduleComponent },
+      // Hiring Pipeline
+      { path: 'hiring/jobs', component: JobListComponent },
+      { path: 'hiring/jobs/new', component: JobPostingFormComponent },
+      { path: 'hiring/jobs/:id/edit', component: JobPostingFormComponent },
+      { path: 'hiring/pipeline/:jobId', component: HiringPipelineComponent },
+      { path: 'hiring/candidates/upload', component: CandidateUploadComponent },
+      { path: 'hiring/candidates/:id', component: CandidateProfileComponent },
+      { path: 'hiring/interview/:applicationId', component: InterviewScheduleComponent },
 
-  // Payroll Routes
-  { path: 'payroll/run', component: PayCycleRunComponent },
-  { path: 'payroll/history', component: PayrollHistoryComponent },
-  { path: 'payroll/payslips/:id', component: PayslipComponent },
+      // Payroll
+      { path: 'payroll/run', component: PayCycleRunComponent },
+      { path: 'payroll/history', component: PayrollHistoryComponent },
+      { path: 'payroll/payslips/:id', component: PayslipComponent },
 
-  // Policy Routes
-  { path: 'policies/documents', component: PolicyListComponent },
-  { path: 'policies/upload', component: PolicyUploadComponent },
-  { path: 'policies/query', component: PolicyQueryComponent },
-  { path: 'policies/compliance', component: ComplianceCheckComponent },
-
+      // Policy
+      { path: 'policies/documents', component: PolicyListComponent },
+      { path: 'policies/upload', component: PolicyUploadComponent },
+      { path: 'policies/query', component: PolicyQueryComponent },
+      { path: 'policies/compliance', component: ComplianceCheckComponent },
+    ]
+  },
   { path: '**', redirectTo: '/login' }
 ];

@@ -1,0 +1,283 @@
+@import '../../../styles/variables';
+@import '../../../styles/mixins';
+
+$sidebar-width: 260px;
+
+:host {
+  display: block;
+  width: $sidebar-width;
+  flex-shrink: 0;
+}
+
+.sidebar {
+  width: $sidebar-width;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: $z-header;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  [data-theme='light'] & {
+    background: rgba(255, 255, 255, 0.85);
+    border-right: 1px solid rgba(99, 102, 241, 0.1);
+    box-shadow: 4px 0 24px rgba(31, 38, 135, 0.08);
+  }
+
+  [data-theme='dark'] & {
+    background: rgba(15, 23, 42, 0.92);
+    border-right: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
+  }
+}
+
+// Brand
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-xl $spacing-lg;
+  border-bottom: 1px solid;
+
+  [data-theme='light'] & {
+    border-color: rgba(99, 102, 241, 0.1);
+  }
+
+  [data-theme='dark'] & {
+    border-color: rgba(255, 255, 255, 0.07);
+  }
+}
+
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: $radius-md;
+  background: linear-gradient(135deg, $primary, $primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.75rem;
+  color: white;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.brand-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+
+  [data-theme='light'] & { color: $light-text-primary; }
+  [data-theme='dark'] & { color: $dark-text-primary; }
+}
+
+.brand-sub {
+  font-size: 0.7rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+
+  [data-theme='light'] & { color: $light-text-secondary; }
+  [data-theme='dark'] & { color: $dark-text-secondary; }
+}
+
+// User info
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md $spacing-lg;
+  margin: $spacing-sm $spacing-sm 0;
+  border-radius: $radius-md;
+
+  [data-theme='light'] & { background: rgba(99, 102, 241, 0.06); }
+  [data-theme='dark'] & { background: rgba(99, 102, 241, 0.12); }
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $primary, $primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: white;
+  flex-shrink: 0;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  [data-theme='light'] & { color: $light-text-primary; }
+  [data-theme='dark'] & { color: $dark-text-primary; }
+}
+
+.role-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+
+  &.role-admin {
+    background: rgba($error, 0.12);
+    color: $error;
+  }
+
+  &.role-hr {
+    background: rgba($primary, 0.12);
+    color: $primary;
+  }
+
+  &.role-manager {
+    background: rgba($warning, 0.12);
+    color: $warning;
+  }
+
+  &.role-employee {
+    background: rgba($success, 0.12);
+    color: $success;
+  }
+}
+
+// Navigation content (scrollable)
+.nav-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: $spacing-sm 0;
+  @include custom-scrollbar;
+}
+
+.nav-section {
+  padding: 0 $spacing-sm;
+  margin-bottom: $spacing-xs;
+}
+
+.nav-section-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: $spacing-md $spacing-sm $spacing-xs;
+
+  [data-theme='light'] & { color: $light-text-secondary; }
+  [data-theme='dark'] & { color: $dark-text-secondary; }
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all $transition-fast;
+  margin-bottom: 2px;
+
+  [data-theme='light'] & {
+    color: $light-text-secondary;
+
+    &:hover {
+      background: rgba(99, 102, 241, 0.08);
+      color: $primary;
+    }
+
+    &.active {
+      background: rgba(99, 102, 241, 0.12);
+      color: $primary;
+      font-weight: 600;
+    }
+  }
+
+  [data-theme='dark'] & {
+    color: $dark-text-secondary;
+
+    &:hover {
+      background: rgba(99, 102, 241, 0.15);
+      color: $primary-light;
+    }
+
+    &.active {
+      background: rgba(99, 102, 241, 0.2);
+      color: $primary-light;
+      font-weight: 600;
+    }
+  }
+}
+
+.nav-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+// Footer
+.sidebar-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md $spacing-lg;
+  border-top: 1px solid;
+
+  [data-theme='light'] & { border-color: rgba(99, 102, 241, 0.1); }
+  [data-theme='dark'] & { border-color: rgba(255, 255, 255, 0.07); }
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-xs $spacing-md;
+  border-radius: $radius-md;
+  border: none;
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  [data-theme='light'] & {
+    color: $light-text-secondary;
+
+    &:hover {
+      background: rgba($error, 0.08);
+      color: $error;
+    }
+  }
+
+  [data-theme='dark'] & {
+    color: $dark-text-secondary;
+
+    &:hover {
+      background: rgba($error, 0.12);
+      color: $error-light;
+    }
+  }
+}

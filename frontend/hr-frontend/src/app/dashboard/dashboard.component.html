@@ -1,91 +1,37 @@
-<div class="dashboard-container">
-  <header class="dashboard-header">
-    <h1>HR Agentic System Dashboard</h1>
-    <button (click)="logout()" class="logout-btn">Logout</button>
-  </header>
+<div class="dashboard-page">
 
-  <div class="dashboard-content" *ngIf="user">
-    <div class="welcome-message">
-      <h2>{{ getRoleMessage() }}</h2>
+  <div class="page-header">
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">HR Agentic System</p>
+  </div>
+
+  <div *ngIf="user" class="dashboard-content">
+
+    <!-- Welcome card -->
+    <div class="welcome-card">
+      <div class="welcome-avatar">{{ user.username.charAt(0).toUpperCase() }}</div>
+      <div class="welcome-text">
+        <h2 class="welcome-name">Hello, {{ user.username }}</h2>
+        <p class="welcome-role-msg">{{ getRoleMessage() }}</p>
+        <span class="welcome-role-badge role-{{ user.role.toLowerCase() }}">{{ user.role }}</span>
+      </div>
     </div>
 
-    <div class="user-info">
-      <h3>User Information</h3>
-      <p><strong>Username:</strong> {{ user.username }}</p>
-      <p><strong>Email:</strong> {{ user.email }}</p>
-      <p><strong>Role:</strong> {{ user.role }}</p>
+    <!-- KPI placeholder grid (populated in Phase 8.3 / 8.4) -->
+    <div class="kpi-grid">
+      <div class="kpi-placeholder"></div>
+      <div class="kpi-placeholder"></div>
+      <div class="kpi-placeholder"></div>
+      <div class="kpi-placeholder"></div>
     </div>
 
-    <!-- Leave Management -->
-    <div class="nav-section">
-      <h3>Leave Management</h3>
-      <ul class="nav-links">
-        <li><a routerLink="/leave/request">Submit Leave Request</a></li>
-        <li><a routerLink="/leave/history">Leave History</a></li>
-        <li><a routerLink="/leave/balance">Leave Balance</a></li>
-        <li *ngIf="user.role === 'manager' || user.role === 'hr' || user.role === 'admin'">
-          <a routerLink="/leave/approvals">Pending Leave Approvals</a>
-        </li>
-        <li *ngIf="user.role === 'manager' || user.role === 'hr' || user.role === 'admin'">
-          <a routerLink="/leave/calendar">Team Calendar</a>
-        </li>
-      </ul>
-    </div>
-
-    <!-- Expense Management -->
-    <div class="nav-section">
-      <h3>Expense Management</h3>
-      <ul class="nav-links">
-        <li><a routerLink="/expenses/submit">Submit Expense Claim</a></li>
-        <li><a routerLink="/expenses/history">Expense History</a></li>
-        <li *ngIf="user.role === 'manager' || user.role === 'hr' || user.role === 'admin'">
-          <a routerLink="/expenses/approvals">Pending Expense Approvals</a>
-        </li>
-      </ul>
-    </div>
-
-    <!-- Hiring Pipeline -->
-    <div class="nav-section" *ngIf="user.role === 'manager' || user.role === 'hr' || user.role === 'admin'">
-      <h3>Hiring Pipeline</h3>
-      <ul class="nav-links">
-        <li><a routerLink="/hiring/jobs">Job Postings</a></li>
-        <li><a routerLink="/hiring/jobs/new">Create Job Posting</a></li>
-        <li><a routerLink="/hiring/candidates/upload">Upload Candidate CV</a></li>
-      </ul>
-    </div>
-
-    <!-- Payroll -->
-    <div class="nav-section">
-      <h3>Payroll</h3>
-      <ul class="nav-links">
-        <li *ngIf="user.role === 'hr' || user.role === 'admin'">
-          <a routerLink="/payroll/run">Run Pay Cycle</a>
-        </li>
-        <li *ngIf="user.role === 'hr' || user.role === 'admin'">
-          <a routerLink="/payroll/history">Payroll History</a>
-        </li>
-        <li *ngIf="user.role === 'employee' || user.role === 'manager'">
-          <a routerLink="/payroll/history">My Payslips</a>
-        </li>
-      </ul>
-    </div>
-
-    <!-- Policy Compliance -->
-    <div class="nav-section">
-      <h3>Policy Compliance</h3>
-      <ul class="nav-links">
-        <li><a routerLink="/policies/documents">Policy Documents</a></li>
-        <li *ngIf="user.role === 'hr' || user.role === 'admin'">
-          <a routerLink="/policies/upload">Upload Policy</a>
-        </li>
-        <li><a routerLink="/policies/query">Ask a Policy Question</a></li>
-        <li><a routerLink="/policies/compliance">Check Compliance</a></li>
-      </ul>
-    </div>
+    <!-- Chart placeholder (populated in Phase 8.4) -->
+    <div class="chart-placeholder"></div>
 
   </div>
 
   <div *ngIf="!user" class="loading">
-    <p>Loading user information...</p>
+    <p>Loading...</p>
   </div>
+
 </div>

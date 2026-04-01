@@ -1,0 +1,21 @@
+@import '../../../styles/variables';
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 260px;
+  min-height: 100vh;
+  overflow-y: auto;
+
+  [data-theme='light'] & {
+    background: linear-gradient(135deg, $light-bg-start, $light-bg-end);
+  }
+
+  [data-theme='dark'] & {
+    background: linear-gradient(135deg, $dark-bg-start, $dark-bg-end);
+  }
+}
