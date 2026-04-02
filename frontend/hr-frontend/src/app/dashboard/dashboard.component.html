@@ -17,7 +17,7 @@
       </div>
     </div>
 
-    <!-- Employee: real KPI cards (Phase 8.3) -->
+    <!-- Employee: personal KPI cards -->
     <ng-container *ngIf="user.role.toLowerCase() === 'employee'">
       <ng-container *ngIf="!kpiLoading; else kpiLoadingTpl">
         <div class="kpi-grid">
@@ -28,23 +28,51 @@
           </div>
         </div>
       </ng-container>
-      <ng-template #kpiLoadingTpl>
-        <div class="kpi-grid">
-          <div class="kpi-placeholder" *ngFor="let _ of [1,2,3,4]"></div>
-        </div>
-      </ng-template>
     </ng-container>
 
-    <!-- Manager/HR/Admin: placeholders for Phase 8.4 -->
-    <ng-container *ngIf="user.role.toLowerCase() !== 'employee'">
-      <div class="kpi-grid">
-        <div class="kpi-placeholder"></div>
-        <div class="kpi-placeholder"></div>
-        <div class="kpi-placeholder"></div>
-        <div class="kpi-placeholder"></div>
-      </div>
-      <div class="chart-placeholder"></div>
+    <!-- Manager / HR / Admin: org-wide KPI cards + charts -->
+    <ng-container *ngIf="['manager','hr','admin'].includes(user.role.toLowerCase())">
+      <ng-container *ngIf="!kpiLoading; else kpiLoadingTpl">
+        <div class="kpi-grid">
+          <div class="kpi-card" [ngClass]="card.colorClass" *ngFor="let card of kpiCards">
+            <div class="kpi-value">{{ card.value }}</div>
+            <div class="kpi-label">{{ card.label }}</div>
+            <div class="kpi-sublabel">{{ card.sublabel }}</div>
+          </div>
+        </div>
+
+        <div *ngIf="showCharts" class="charts-grid">
+          <div class="chart-card">
+            <h3 class="chart-title">Applications by Status</h3>
+            <div class="chart-wrapper">
+              <canvas #applicationsCanvas></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3 class="chart-title">Expenses by Category</h3>
+            <div class="chart-wrapper">
+              <canvas #expenseCanvas></canvas>
+            </div>
+          </div>
+          <div *ngIf="isHrOrAdmin" class="chart-card">
+            <h3 class="chart-title">Leave by Type</h3>
+            <div class="chart-wrapper">
+              <canvas #leaveCanvas></canvas>
+            </div>
+          </div>
+        </div>
+      </ng-container>
     </ng-container>
+
+    <ng-template #kpiLoadingTpl>
+      <div class="kpi-grid">
+        <div class="kpi-placeholder" *ngFor="let _ of [1,2,3,4]"></div>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-placeholder"></div>
+        <div class="chart-placeholder"></div>
+      </div>
+    </ng-template>
 
   </div>
 

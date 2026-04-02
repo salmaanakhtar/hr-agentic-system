@@ -72,6 +72,22 @@ export interface ExpensePolicy {
   description: string;
 }
 
+export interface ExpenseReport {
+  summary: {
+    total_claims: number;
+    approved: number;
+    pending: number;
+    rejected: number;
+    approval_rate: number;
+  };
+  llm_decisions: {
+    auto_approved: number;
+    escalated_to_manager: number;
+    auto_approval_rate: number;
+  };
+  by_category: { category: string; total_approved: number; count: number }[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -148,6 +164,10 @@ export class ExpenseService {
       null,
       { params }
     );
+  }
+
+  getReports(): Observable<ExpenseReport> {
+    return this.http.get<ExpenseReport>(`${this.apiUrl}/reports`);
   }
 
   // Get all expense policies

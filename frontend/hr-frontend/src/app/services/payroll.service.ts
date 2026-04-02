@@ -58,6 +58,21 @@ export interface PayCycleRunResult {
   results: PayCycleRunEmployeeResult[];
 }
 
+export interface PayrollReport {
+  summary: {
+    total_cycles: number;
+    cycles_by_status: Record<string, number>;
+    total_payslips: number;
+    payslips_by_status: Record<string, number>;
+  };
+  financials: {
+    total_net_pay_approved: number | null;
+    avg_net_pay_approved: number | null;
+    approved_payslip_count: number;
+  };
+  most_recent_cycle: PayCycle | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PayrollService {
   private apiUrl = 'http://127.0.0.1:8000/api/payroll';
@@ -104,7 +119,7 @@ export class PayrollService {
     );
   }
 
-  getReports(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/reports`);
+  getReports(): Observable<PayrollReport> {
+    return this.http.get<PayrollReport>(`${this.apiUrl}/reports`);
   }
 }

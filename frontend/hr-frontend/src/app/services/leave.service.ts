@@ -87,11 +87,9 @@ export interface PriorityPeriod {
 
 export interface LeaveReport {
   total_requests: number;
-  approved_requests: number;
-  pending_requests: number;
-  rejected_requests: number;
-  most_used_leave_type: string;
-  average_days_per_request: number;
+  status_breakdown: Record<string, number>;
+  leave_type_totals: Record<string, number>;
+  average_approval_time_hours: number | null;
 }
 
 @Injectable({
