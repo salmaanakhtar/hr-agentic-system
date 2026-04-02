@@ -17,16 +17,34 @@
       </div>
     </div>
 
-    <!-- KPI placeholder grid (populated in Phase 8.3 / 8.4) -->
-    <div class="kpi-grid">
-      <div class="kpi-placeholder"></div>
-      <div class="kpi-placeholder"></div>
-      <div class="kpi-placeholder"></div>
-      <div class="kpi-placeholder"></div>
-    </div>
+    <!-- Employee: real KPI cards (Phase 8.3) -->
+    <ng-container *ngIf="user.role.toLowerCase() === 'employee'">
+      <ng-container *ngIf="!kpiLoading; else kpiLoadingTpl">
+        <div class="kpi-grid">
+          <div class="kpi-card" [ngClass]="card.colorClass" *ngFor="let card of kpiCards">
+            <div class="kpi-value">{{ card.value }}</div>
+            <div class="kpi-label">{{ card.label }}</div>
+            <div class="kpi-sublabel">{{ card.sublabel }}</div>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #kpiLoadingTpl>
+        <div class="kpi-grid">
+          <div class="kpi-placeholder" *ngFor="let _ of [1,2,3,4]"></div>
+        </div>
+      </ng-template>
+    </ng-container>
 
-    <!-- Chart placeholder (populated in Phase 8.4) -->
-    <div class="chart-placeholder"></div>
+    <!-- Manager/HR/Admin: placeholders for Phase 8.4 -->
+    <ng-container *ngIf="user.role.toLowerCase() !== 'employee'">
+      <div class="kpi-grid">
+        <div class="kpi-placeholder"></div>
+        <div class="kpi-placeholder"></div>
+        <div class="kpi-placeholder"></div>
+        <div class="kpi-placeholder"></div>
+      </div>
+      <div class="chart-placeholder"></div>
+    </ng-container>
 
   </div>
 

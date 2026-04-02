@@ -104,11 +104,68 @@
 .welcome-role-badge.role-manager { background: rgba(245,158,11,0.12); color: #f59e0b; }
 .welcome-role-badge.role-employee { background: rgba(16,185,129,0.12); color: #10b981; }
 
-/* KPI grid placeholders */
+/* KPI grid */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
+}
+
+/* KPI cards */
+.kpi-card {
+  padding: 1.25rem 1.5rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #6366f1;
+  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+[data-theme='dark'] .kpi-card {
+  background: rgba(15, 23, 42, 0.7);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.kpi-card.kpi-indigo { border-top-color: #6366f1; }
+.kpi-card.kpi-green  { border-top-color: #10b981; }
+.kpi-card.kpi-blue   { border-top-color: #3b82f6; }
+.kpi-card.kpi-amber  { border-top-color: #f59e0b; }
+.kpi-card.kpi-purple { border-top-color: #8b5cf6; }
+
+.kpi-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary, #1f2937);
+  line-height: 1;
+}
+
+[data-theme='dark'] .kpi-value {
+  color: #f1f5f9;
+}
+
+.kpi-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary, #6b7280);
+  margin-top: 0.25rem;
+}
+
+[data-theme='dark'] .kpi-label {
+  color: #94a3b8;
+}
+
+.kpi-sublabel {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #9ca3af);
+}
+
+[data-theme='dark'] .kpi-sublabel {
+  color: #64748b;
 }
 
 .kpi-placeholder {
