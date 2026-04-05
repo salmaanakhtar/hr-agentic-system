@@ -28,7 +28,8 @@ from langchain_core.tools import StructuredTool
 from langchain_openai import ChatOpenAI
 from pydantic.v1 import BaseModel as BaseModelV1
 from pydantic.v1 import Field
-from sqlalchemy import select
+from sqlalchemy import Float as SQLFloat
+from sqlalchemy import cast, select
 
 from agents.base import Agent
 from agents.reasoning_system import (
@@ -434,10 +435,19 @@ RECOMMENDATIONS: [any follow-up actions, e.g. seek manager approval; contact HR]
             query_embedding = embed_response.data[0].embedding
 
             async with AsyncSessionLocal() as db:
+                distance_expr = cast(
+                    PolicyChunk.embedding.op("<=>")(query_embedding),
+                    SQLFloat,
+                ).label("distance")
                 stmt = (
                     select(
-                        PolicyChunk,
-                        PolicyChunk.embedding.op("<=>")(query_embedding).label("distance"),
+                        PolicyChunk.id,
+                        PolicyChunk.document_id,
+                        PolicyChunk.chunk_index,
+                        PolicyChunk.content,
+                        PolicyDocument.title.label("doc_title"),
+                        PolicyDocument.category.label("doc_category"),
+                        distance_expr,
                     )
                     .join(PolicyDocument, PolicyChunk.document_id == PolicyDocument.id)
                     .where(PolicyDocument.is_active == True)
@@ -446,21 +456,20 @@ RECOMMENDATIONS: [any follow-up actions, e.g. seek manager approval; contact HR]
                 if category:
                     stmt = stmt.where(PolicyDocument.category == category)
 
-                stmt = stmt.order_by("distance").limit(top_k)
+                stmt = stmt.order_by(distance_expr).limit(top_k)
                 result = await db.execute(stmt)
                 rows = result.all()
 
-                # Eagerly load document titles while session is open
                 chunks_data = []
-                for chunk, distance in rows:
+                for chunk_id, document_id, chunk_index, content, doc_title, doc_category, distance in rows:
                     similarity = round(1.0 - float(distance), 4)
                     chunks_data.append({
-                        "chunk_id": chunk.id,
-                        "document_id": chunk.document_id,
-                        "document_title": chunk.document.title,
-                        "document_category": chunk.document.category,
-                        "chunk_index": chunk.chunk_index,
-                        "content": chunk.content,
+                        "chunk_id": chunk_id,
+                        "document_id": document_id,
+                        "document_title": doc_title,
+                        "document_category": doc_category,
+                        "chunk_index": chunk_index,
+                        "content": content,
                         "similarity_score": similarity,
                     })
 

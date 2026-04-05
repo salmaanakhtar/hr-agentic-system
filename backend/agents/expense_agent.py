@@ -315,7 +315,7 @@ RECEIPT UPLOADED: {"Yes - file path: " + str(input_data.receipt_path) if has_rec
 Use the available tools to:
 1. {"Call validate_receipt_ocr with expense_id=" + str(expense_id) + " and receipt_path=" + str(input_data.receipt_path) if has_receipt else "No receipt to validate - skip validate_receipt_ocr"}
 2. Call check_policy_limits for category '{input_data.category}' with amount {input_data.amount}
-3. Call detect_duplicates with user_id={input_data.user_id}, amount={input_data.amount}, expense_date='{input_data.date}', current_expense_id={expense_id}
+3. Call detect_duplicates with user_id={input_data.user_id}, vendor='{input_data.vendor or ""}', amount={input_data.amount}, expense_date='{input_data.date}', current_expense_id={expense_id}
 4. Call check_monthly_spend for user_id={input_data.user_id} and category='{input_data.category}'
 
 Then make your final decision following the criteria in your instructions.
@@ -616,10 +616,10 @@ Then make your final decision following the criteria in your instructions.
     async def _tool_detect_duplicates(
         self,
         user_id: int,
-        vendor: str,
         amount: float,
         expense_date: str,
         current_expense_id: int,
+        vendor: str = "",
     ) -> str:
         """Check for duplicate expense submissions within a 7-day window."""
         try:

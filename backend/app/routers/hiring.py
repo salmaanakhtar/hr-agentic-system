@@ -493,6 +493,7 @@ async def create_application(
     db.add(application)
     await db.flush()
     application_id = application.id
+    submitter_id = current_user.id  # cache before commit
     await db.commit()
 
     logger.info(
@@ -505,7 +506,7 @@ async def create_application(
         application_id=application_id,
         job_id=app_data.job_id,
         candidate_id=app_data.candidate_id,
-        submitted_by=current_user.id,
+        submitted_by=submitter_id,
     )
     agent = HiringAgent()
     return await agent.execute(agent_input)

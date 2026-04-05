@@ -51,3 +51,5 @@ backend/test_cv_parser.py
 backend/test_hiring_agent.py
 backend/test_payroll_api.py
 backend/test_policy_api.py
+backend/test_expense_api.py
+backend/test_leave_api.py

@@ -298,16 +298,18 @@ async def delete_policy_document(
         raise HTTPException(status_code=400, detail="Policy document is already inactive")
 
     doc.is_active = False
+    doc_title = doc.title  # cache before commit
+    deactivator_id = current_user.id  # cache before commit
     await db.commit()
 
     logger.info(
-        f"Policy document {document_id} deactivated by user {current_user.id}"
+        f"Policy document {document_id} deactivated by user {deactivator_id}"
     )
 
     return {
         "message": "Policy document deactivated successfully",
         "document_id": document_id,
-        "title": doc.title,
+        "title": doc_title,
         "is_active": False,
     }
 

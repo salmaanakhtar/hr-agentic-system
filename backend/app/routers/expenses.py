@@ -384,13 +384,14 @@ async def reject_expense(
         )
 
     expense_id_cached = expense.id
+    reviewer_id = current_user.id
     expense.status = ExpenseStatus.REJECTED.value
     expense.reviewed_at = datetime.utcnow()
-    expense.reviewed_by = current_user.id
+    expense.reviewed_by = reviewer_id
     expense.rejection_reason = reason.strip()
     await db.commit()
 
-    logger.info(f"Manager {current_user.id} rejected expense {expense_id_cached}: {reason}")
+    logger.info(f"Manager {reviewer_id} rejected expense {expense_id_cached}: {reason}")
 
     return ExpenseApprovalOutput(
         success=True,
@@ -468,16 +469,24 @@ async def update_expense_policy(
         policy.description = description
 
     policy.updated_at = datetime.utcnow()
+
+    # Cache values before commit to avoid greenlet lazy-load errors
+    policy_id_cached = policy.id
+    policy_category_cached = policy.category
+    policy_max_cached = policy.max_amount
+    policy_threshold_cached = policy.approval_threshold
+    policy_receipt_cached = policy.requires_receipt
+
     await db.commit()
 
     return {
         "message": "Policy updated successfully",
         "policy": {
-            "id": policy.id,
-            "category": policy.category,
-            "max_amount": policy.max_amount,
-            "approval_threshold": policy.approval_threshold,
-            "requires_receipt": policy.requires_receipt,
+            "id": policy_id_cached,
+            "category": policy_category_cached,
+            "max_amount": policy_max_cached,
+            "approval_threshold": policy_threshold_cached,
+            "requires_receipt": policy_receipt_cached,
         },
     }
 
