@@ -17,6 +17,12 @@
       </div>
     </div>
 
+    <!-- Error banner -->
+    <div class="error-banner" *ngIf="kpiError">
+      <span class="error-icon">!</span>
+      <span>{{ kpiError }}</span>
+    </div>
+
     <!-- Employee: personal KPI cards -->
     <ng-container *ngIf="user.role.toLowerCase() === 'employee'">
       <ng-container *ngIf="!kpiLoading; else kpiLoadingTpl">

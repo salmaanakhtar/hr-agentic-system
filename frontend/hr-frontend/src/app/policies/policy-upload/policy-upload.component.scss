@@ -236,11 +236,24 @@
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
+.upload-loading {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.upload-spinner {
+  margin: 0;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+}
+
 .upload-note {
   @include text-secondary;
   font-size: 0.82rem;
-  text-align: center;
-  margin: 1rem 0 0 0;
+  margin: 0;
   animation: pulse 1.5s ease-in-out infinite;
 }
 

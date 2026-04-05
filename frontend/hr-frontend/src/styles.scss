@@ -11,4 +11,18 @@
 @import 'styles/mixins';
 @import 'styles/theme';
 
-// You can add any global styles here
+// Global loading spinner (ring animation)
+// Containers use flex + gap for centering/spacing; this class just provides the animation.
+.spinner {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(99, 102, 241, 0.2);
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

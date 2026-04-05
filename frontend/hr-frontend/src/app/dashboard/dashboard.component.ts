@@ -28,6 +28,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   user: User | null = null;
   kpiCards: KpiCard[] = [];
   kpiLoading = true;
+  kpiError: string | null = null;
   showCharts = false;
   isHrOrAdmin = false;
 
@@ -77,11 +78,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private loadOrgKpis(role: string): void {
     const hrAdmin = ['hr', 'admin'].includes(role);
+    let fetchErrors = 0;
+    const expectedSources = hrAdmin ? 4 : 2;
 
-    const expense$ = this.expenseService.getReports().pipe(catchError(() => of(null)));
-    const hiring$ = this.hiringService.getReports().pipe(catchError(() => of(null)));
-    const leave$ = hrAdmin ? this.leaveService.getLeaveReports().pipe(catchError(() => of(null))) : of(null);
-    const payroll$ = hrAdmin ? this.payrollService.getReports().pipe(catchError(() => of(null))) : of(null);
+    const expense$ = this.expenseService.getReports().pipe(catchError(() => { fetchErrors++; return of(null); }));
+    const hiring$ = this.hiringService.getReports().pipe(catchError(() => { fetchErrors++; return of(null); }));
+    const leave$ = hrAdmin
+      ? this.leaveService.getLeaveReports().pipe(catchError(() => { fetchErrors++; return of(null); }))
+      : of(null);
+    const payroll$ = hrAdmin
+      ? this.payrollService.getReports().pipe(catchError(() => { fetchErrors++; return of(null); }))
+      : of(null);
 
     forkJoin({ expense: expense$, hiring: hiring$, leave: leave$, payroll: payroll$ })
       .subscribe(({ expense, hiring, leave, payroll }) => {
@@ -145,9 +152,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.hiringReport = hiring;
         this.leaveReport = leave;
         this.kpiLoading = false;
-        this.showCharts = true;
 
-        setTimeout(() => this.createCharts(), 0);
+        if (fetchErrors > 0) {
+          this.kpiError = fetchErrors === expectedSources
+            ? 'Unable to load dashboard data. Please try refreshing the page.'
+            : 'Some data failed to load. Showing partial results.';
+        }
+
+        if (cards.length > 0) {
+          this.showCharts = true;
+          setTimeout(() => this.createCharts(), 0);
+        }
       });
   }
 
@@ -238,11 +253,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private loadEmployeeKpis(): void {
     const leaveColors = ['kpi-indigo', 'kpi-blue', 'kpi-green'];
+    let fetchErrors = 0;
 
     forkJoin({
-      leaveBalances: this.leaveService.getLeaveBalances().pipe(catchError(() => of([]))),
-      expenses: this.expenseService.getExpenseHistory().pipe(catchError(() => of([]))),
-      payslips: this.payrollService.getPayslips().pipe(catchError(() => of([])))
+      leaveBalances: this.leaveService.getLeaveBalances().pipe(catchError(() => { fetchErrors++; return of([]); })),
+      expenses: this.expenseService.getExpenseHistory().pipe(catchError(() => { fetchErrors++; return of([]); })),
+      payslips: this.payrollService.getPayslips().pipe(catchError(() => { fetchErrors++; return of([]); }))
     }).subscribe(({ leaveBalances, expenses, payslips }) => {
       const cards: KpiCard[] = [];
 
@@ -287,6 +303,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
       this.kpiCards = cards;
       this.kpiLoading = false;
+
+      if (fetchErrors === 3) {
+        this.kpiError = 'Unable to load dashboard data. Please try refreshing the page.';
+      } else if (fetchErrors > 0) {
+        this.kpiError = 'Some data failed to load. Showing partial results.';
+      }
     });
   }
 

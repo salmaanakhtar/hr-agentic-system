@@ -91,9 +91,10 @@
       </button>
     </div>
 
-    <p class="upload-note" *ngIf="isUploading">
-      This may take 15–30 seconds — the document is being parsed and embedded.
-    </p>
+    <div class="upload-loading" *ngIf="isUploading">
+      <div class="spinner upload-spinner"></div>
+      <p class="upload-note">This may take 15–30 seconds — the document is being parsed and embedded.</p>
+    </div>
 
   </div>
 

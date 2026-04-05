@@ -237,6 +237,23 @@
   50% { opacity: 0.5; }
 }
 
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  font-size: 0.9rem;
+}
+
+.error-icon {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
 .loading {
   text-align: center;
   padding: 3rem;

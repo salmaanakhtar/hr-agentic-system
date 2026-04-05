@@ -9,7 +9,10 @@
 
 .loading-container {
   @include glass-card;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
   padding: 3rem;
 }
 
