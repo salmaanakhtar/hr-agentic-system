@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { HiringService, JobPosting } from '../../services/hiring.service';
+import { AuthService } from '../../auth.service';
 
 @Component({
   selector: 'app-job-list',
@@ -26,7 +27,15 @@ export class JobListComponent implements OnInit {
     { value: 'on_hold', label: 'On Hold' },
   ];
 
-  constructor(private hiringService: HiringService) {}
+  constructor(
+    private hiringService: HiringService,
+    private authService: AuthService,
+  ) {}
+
+  canManage(): boolean {
+    const role = this.authService.getCurrentUser()?.role.toLowerCase() ?? '';
+    return ['manager', 'hr', 'admin'].includes(role);
+  }
 
   ngOnInit(): void {
     this.loadJobs();

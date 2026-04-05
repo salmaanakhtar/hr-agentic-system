@@ -1,7 +1,7 @@
 <div class="page-container">
   <div class="page-header">
     <h1 class="page-title">Job Postings</h1>
-    <a routerLink="/hiring/jobs/new" class="btn-primary">+ New Job</a>
+    <a *ngIf="canManage()" routerLink="/hiring/jobs/new" class="btn-primary">+ New Job</a>
   </div>
 
   <!-- Filters -->
@@ -27,8 +27,8 @@
   <!-- Empty -->
   <div class="empty-state" *ngIf="!isLoading && !error && jobs.length === 0">
     <p class="empty-text">No job postings found</p>
-    <p class="empty-sub">Create a new job posting to get started</p>
-    <a routerLink="/hiring/jobs/new" class="btn-primary">Create Job Posting</a>
+    <p class="empty-sub" *ngIf="canManage()">Create a new job posting to get started</p>
+    <a *ngIf="canManage()" routerLink="/hiring/jobs/new" class="btn-primary">Create Job Posting</a>
   </div>
 
   <!-- Job Cards -->
@@ -74,7 +74,7 @@
         <a [routerLink]="['/hiring/pipeline', job.id]" class="btn-action btn-pipeline">
           View Pipeline
         </a>
-        <a [routerLink]="['/hiring/jobs', job.id, 'edit']" class="btn-action btn-edit">
+        <a *ngIf="canManage()" [routerLink]="['/hiring/jobs', job.id, 'edit']" class="btn-action btn-edit">
           Edit
         </a>
       </div>

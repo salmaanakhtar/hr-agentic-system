@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ExpenseService, Expense } from '../../services/expense.service';
+import { AuthService } from '../../auth.service';
 import { LlmReasoningDisplayComponent } from '../../leave/llm-reasoning-display/llm-reasoning-display.component';
 import { OcrResultDisplayComponent, SubmittedExpenseData } from '../ocr-result-display/ocr-result-display.component';
 
@@ -27,9 +29,18 @@ export class PendingExpenseApprovalsComponent implements OnInit {
   isActioning = false;
   actioningId: number | null = null;
 
-  constructor(private expenseService: ExpenseService) {}
+  constructor(
+    private expenseService: ExpenseService,
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
+    const role = this.authService.getCurrentUser()?.role.toLowerCase() ?? '';
+    if (!['manager', 'hr', 'admin'].includes(role)) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
     this.loadPending();
   }
 

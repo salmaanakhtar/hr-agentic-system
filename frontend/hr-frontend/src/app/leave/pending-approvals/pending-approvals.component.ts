@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { LeaveService, PendingApproval } from '../../services/leave.service';
+import { AuthService } from '../../auth.service';
 import { LlmReasoningDisplayComponent } from '../llm-reasoning-display/llm-reasoning-display.component';
 
 @Component({
@@ -24,9 +26,18 @@ export class PendingApprovalsComponent implements OnInit {
   // Approval comments
   approvalComments: { [key: number]: string } = {};
 
-  constructor(private leaveService: LeaveService) {}
+  constructor(
+    private leaveService: LeaveService,
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
+    const role = this.authService.getCurrentUser()?.role.toLowerCase() ?? '';
+    if (!['manager', 'hr', 'admin'].includes(role)) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
     this.loadPendingApprovals();
   }
 

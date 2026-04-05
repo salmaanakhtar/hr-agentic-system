@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './login/login.component';
 import { SignupComponent } from './signup/signup.component';
 import { AppShellComponent } from './shared/app-shell/app-shell.component';
+import { authGuard } from './auth.guard';
+import { managerGuard, hrAdminGuard } from './role.guard';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { LeaveRequestFormComponent } from './leave/leave-request-form/leave-request-form.component';
 import { LeaveHistoryComponent } from './leave/leave-history/leave-history.component';
@@ -32,6 +34,7 @@ export const routes: Routes = [
   {
     path: '',
     component: AppShellComponent,
+    canActivate: [authGuard],
     children: [
       { path: 'dashboard', component: DashboardComponent },
 
@@ -39,31 +42,31 @@ export const routes: Routes = [
       { path: 'leave/request', component: LeaveRequestFormComponent },
       { path: 'leave/history', component: LeaveHistoryComponent },
       { path: 'leave/balance', component: LeaveBalanceCardComponent },
-      { path: 'leave/approvals', component: PendingApprovalsComponent },
-      { path: 'leave/calendar', component: TeamCalendarComponent },
+      { path: 'leave/approvals', component: PendingApprovalsComponent, canActivate: [managerGuard] },
+      { path: 'leave/calendar', component: TeamCalendarComponent, canActivate: [managerGuard] },
 
       // Expense Management
       { path: 'expenses/submit', component: ExpenseRequestFormComponent },
       { path: 'expenses/history', component: ExpenseHistoryComponent },
-      { path: 'expenses/approvals', component: PendingExpenseApprovalsComponent },
+      { path: 'expenses/approvals', component: PendingExpenseApprovalsComponent, canActivate: [managerGuard] },
 
-      // Hiring Pipeline
-      { path: 'hiring/jobs', component: JobListComponent },
-      { path: 'hiring/jobs/new', component: JobPostingFormComponent },
-      { path: 'hiring/jobs/:id/edit', component: JobPostingFormComponent },
-      { path: 'hiring/pipeline/:jobId', component: HiringPipelineComponent },
-      { path: 'hiring/candidates/upload', component: CandidateUploadComponent },
-      { path: 'hiring/candidates/:id', component: CandidateProfileComponent },
-      { path: 'hiring/interview/:applicationId', component: InterviewScheduleComponent },
+      // Hiring Pipeline (manager+ only)
+      { path: 'hiring/jobs', component: JobListComponent, canActivate: [managerGuard] },
+      { path: 'hiring/jobs/new', component: JobPostingFormComponent, canActivate: [managerGuard] },
+      { path: 'hiring/jobs/:id/edit', component: JobPostingFormComponent, canActivate: [managerGuard] },
+      { path: 'hiring/pipeline/:jobId', component: HiringPipelineComponent, canActivate: [managerGuard] },
+      { path: 'hiring/candidates/upload', component: CandidateUploadComponent, canActivate: [managerGuard] },
+      { path: 'hiring/candidates/:id', component: CandidateProfileComponent, canActivate: [managerGuard] },
+      { path: 'hiring/interview/:applicationId', component: InterviewScheduleComponent, canActivate: [managerGuard] },
 
       // Payroll
-      { path: 'payroll/run', component: PayCycleRunComponent },
+      { path: 'payroll/run', component: PayCycleRunComponent, canActivate: [hrAdminGuard] },
       { path: 'payroll/history', component: PayrollHistoryComponent },
       { path: 'payroll/payslips/:id', component: PayslipComponent },
 
       // Policy
       { path: 'policies/documents', component: PolicyListComponent },
-      { path: 'policies/upload', component: PolicyUploadComponent },
+      { path: 'policies/upload', component: PolicyUploadComponent, canActivate: [hrAdminGuard] },
       { path: 'policies/query', component: PolicyQueryComponent },
       { path: 'policies/compliance', component: ComplianceCheckComponent },
     ]
