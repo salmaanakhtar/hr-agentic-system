@@ -1,4 +1,0 @@
-DEPRECATION: Loading egg at c:\python311\lib\site-packages\vboxapi-1.0-py3.11.egg is deprecated. pip 24.3 will enforce this behaviour change. A possible replacement is to use pip for package installation.. Discussion can be found at https://github.com/pypa/pip/issues/12330
-
-[notice] A new release of pip is available: 23.3.1 -> 26.0.1
-[notice] To update, run: python.exe -m pip install --upgrade pip

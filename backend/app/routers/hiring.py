@@ -586,8 +586,9 @@ async def update_application_status(
         raise HTTPException(status_code=404, detail="Application not found")
 
     application_id_cached = application.id
+    reviewer_id_cached = current_user.id
     application.status = status_data.status
-    application.reviewed_by = current_user.id
+    application.reviewed_by = reviewer_id_cached
     application.reviewed_at = datetime.utcnow()
     application.updated_at = datetime.utcnow()
     if status_data.notes:
@@ -595,7 +596,7 @@ async def update_application_status(
     await db.commit()
 
     logger.info(
-        f"User {current_user.id} updated application {application_id_cached} "
+        f"User {reviewer_id_cached} updated application {application_id_cached} "
         f"status to {status_data.status}"
     )
 

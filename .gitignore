@@ -1,5 +1,6 @@
-# Environment variables
+# Environment
 .env
+*.env
 
 # Python
 __pycache__/
@@ -11,7 +12,6 @@ env/
 venv/
 .venv/
 pip-log.txt
-pip-delete-this-directory.txt
 
 # IDE
 .vscode/
@@ -20,36 +20,25 @@ pip-delete-this-directory.txt
 # OS
 .DS_Store
 Thumbs.db
-backend/manual_test.py
-backend/test_agents.py
-backend/test_tools.py
-backend/test_state.py
-backend/test_runner.py
-backend/test_phase2_completion.py
+*.stackdump
+
+# Angular build artifacts
+frontend/hr-frontend/dist/
+frontend/hr-frontend/.angular/
+
+# Uploaded files (generated at runtime / by seed scripts)
+backend/uploads/
+
+# Claude Code
+.claude/
 CLAUDE.md
+
+# Dev / planning docs (not part of the submission)
 REFACTOR_PLAN.md
-backend/test_langchain_leave_agent.py
-backend/test_leave_agent_basic.py
 REFACTOR_COMPLETE.md
-backend/agents/leave_agent_rule_based_backup.py
 SESSION_END_SUMMARY.md
-backend/HR_Agentic_System_API.postman_collection.json
-backend/POSTMAN_TESTING_GUIDE.md
-backend/PHASE_3.4_COMPLETE.md
 SESSION_2_SUMMARY.md
-.claude/settings.local.json
-backend/add_llm_columns.py
-backend/check_leave_requests.py
-backend/clear_database.py
-backend/clear_leave_data.py
-backend/create_default_balances.py
-/.claude
+FEATURES.md
+reportplan.md
 *.excalidraw
 hiring-sequence.png
-backend/test_hiring_api.py
-backend/test_cv_parser.py
-backend/test_hiring_agent.py
-backend/test_payroll_api.py
-backend/test_policy_api.py
-backend/test_expense_api.py
-backend/test_leave_api.py
